@@ -3,6 +3,25 @@
 The existing Tuya Local vacuum/profile stays unchanged. **The read-only historical
 map camera is installed and verified on HA 2026.10.1.**
 
+## Current target: phone-free map retrieval
+
+**There is no working independent current-map downloader yet.** Phone-cache reads
+and offline file inspection do not meet the requested phone-free retrieval goal.
+Neither is offered as a substitute for a robot-to-Python read.
+
+The examined fresh token-free SDK entry still starts a cloud HTTP-offer state;
+disabling that callback does not switch it to LAN. An empty ICE-server array does
+not gather a host candidate in the inspected native path. Both traced file-transfer
+callers require a separate RTC-response password in addition to localKey for auth.
+Therefore device ID/localKey alone is not an established bootstrap recipe. This
+does not prove every possible robot-local route impossible.
+
+Python-only cloud authentication would not require the mobile app, but the complete
+negotiated LAN map transfer remains unimplemented/unverified. No new login, phone
+access, robot connection, camera startup or cleaning was performed in this pass.
+Existing HA vacuum and historical camera are unchanged. Only offline signaling
+codec/SDP models were tested; no live P2P downloader is included in the distribution.
+
 ## What now works
 
 - Cecotec OEM account/storage reads without a Tuya IoT developer project.
