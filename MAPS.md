@@ -45,6 +45,18 @@ parser and room commands are incompatible or unvalidated, and it requests upload
 
 ## Still separate
 
+A later explicitly authorized trial sent one DP16 `get_both` request through the
+existing Tuya Local connection, without starting cleaning. The fixed live objects
+still returned 404 afterward. The temporary trial service was removed; the camera
+and dashboard remain historical, with the original vacuum profile unchanged.
+
+Static panel/SDK analysis identified a separate P2P file-transfer route. A passive
+phone-cache read decoded a different layout from the displayed history, but matched
+the earlier phone cache: this is not proof of freshness or independent retrieval.
+A standalone Python P2P map downloader is not yet validated. Camera-oriented P2P
+clients must not be used unchanged: their automatic video controls have unknown
+effects on this robot. No upload service or P2P client is included in this source.
+
 Orientation, bathroom-to-room-ID mapping, dock/path coordinate transforms,
 continuous OEM credential/session lifecycle, automatic refresh and room/zone command
 acceptance are unvalidated. Displaying a historical map does not enable “clean only
