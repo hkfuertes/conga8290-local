@@ -155,6 +155,21 @@ docker build --target tests -t conga8290-tests .
 Keep a backup of the profile: a HACS update may overwrite it.
 Avoid running another LAN client while HA owns the robot's connection.
 
+### Extended experimental controls
+
+The YAML now defines **56 entities** (25 enabled, 31 disabled by default), covering
+all scalar fields in the cached product schema. It adds cleaning patterns,
+vacuum/mop work mode, mopping intensity, Y-mopping, carpet settings, sound/volume,
+DND, consumables and lifetime totals. Uncertain controls, hardware-specific
+features, movement and resets are disabled by default. Raw room/map/schedule
+payloads are not guessed. See [PROFILE.md](PROFILE.md) for the complete inventory,
+safety caveats and the assessment of `tuya-vacuum-maps`.
+
+The original six entity mappings are preserved. The extended profile was loaded
+on the test HA instance: 56 registered entities, 25 enabled with valid read states
+and 31 disabled by default. No robot commands were sent during deployment. The
+recovery script does not deploy the profile or modify HA automatically.
+
 ## Status and limitations
 
 ### Shared versus device-specific data
@@ -175,11 +190,14 @@ it is not calculated from the ID, and there is no universal key for all Conga 82
 robots. The YAML is reusable for units with the same product/schema; it has not
 been tested with every unit sold under the 8290 name or every firmware version.
 
-Packaging verified offline: **67 tests** on macOS (Python 3.12), Linux amd64
+Original packaging verified offline: **67 tests** on macOS (Python 3.12), Linux amd64
 (Python 3.13) and Linux Docker amd64 (Python 3.13). Bootstrap with actual compatible
 resources was verified on Mac and Docker, without network access or authentication.
 The Docker image was tested as a non-root user with a read-only root filesystem
 and bind-mounted resources. Docker Desktop on Mac was not run during validation.
+The expanded profile adds seven regression tests (**74 package tests** total,
+verified on macOS after the deployment fix);
+offline schema checks also verify enum values, types, ranges and scalar coverage.
 
 OEM-UI login and cloud recovery were verified with the test account/model/APK;
 the key matches the original capture. The YAML was loaded in HA and LAN 3.3 reads
