@@ -57,6 +57,14 @@ A standalone Python P2P map downloader is not yet validated. Camera-oriented P2P
 clients must not be used unchanged: their automatic video controls have unknown
 effects on this robot. No upload service or P2P client is included in this source.
 
+Further phone-assisted research observed a direct UDP conversation with the robot
+while its map/path cache modification times advanced. One source-backed OEM RTC
+configuration read also succeeded without a developer project. The authentication
+and album-index framing now have synthetic Python tests, but negotiation, selected
+cipher/key derivation and independent map retrieval remain unresolved. Packet
+metadata and cache timestamps do not prove new floor-plan content. HA was not
+changed by this follow-up, and no cleaning command was invoked by the tools.
+
 Orientation, bathroom-to-room-ID mapping, dock/path coordinate transforms,
 continuous OEM credential/session lifecycle, automatic refresh and room/zone command
 acceptance are unvalidated. Displaying a historical map does not enable “clean only
