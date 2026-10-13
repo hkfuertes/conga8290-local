@@ -95,6 +95,12 @@ class Room:
     mop_count: int
     name: str
     vertex_count: int
+    vertices_wire_u16: tuple[tuple[int, int], ...] = ()
+    sweep_forbidden_raw: int | None = None
+    mop_forbidden_raw: int | None = None
+    fan_raw: int | None = None
+    water_raw: int | None = None
+    y_mode_raw: int | None = None
 
 
 @dataclass(frozen=True)
@@ -104,6 +110,10 @@ class Layout:
     height: int
     cells: bytes
     rooms: tuple[Room, ...]
+    map_id: int | None = None
+    resolution_raw: int | None = None
+    origin_wire_u16: tuple[int, int] | None = None
+    dock_wire_u16: tuple[int, int] | None = None
 
 
 @dataclass(frozen=True)
@@ -186,13 +196,19 @@ def decode_layout(data):
         except UnicodeDecodeError as error:
             raise MapFormatError('Invalid room-name encoding') from error
         vertex_count = record[46]
-        position += 47 + vertex_count * 4
-        if position > len(table):
+        end = position + 47 + vertex_count * 4
+        if end > len(table):
             raise MapFormatError('Truncated room polygon')
-        rooms.append(Room(room_id, order, sweep_count, mop_count, name, vertex_count))
+        # Unsigned wire coordinates only; neither grid nor physical transforms.
+        vertices = tuple(struct.iter_unpack('>HH', table[position + 47:end]))
+        rooms.append(Room(room_id, order, sweep_count, mop_count, name, vertex_count,
+                          vertices, *record[9:14]))
+        position = end
     if position != len(table):
         raise MapFormatError('Unexpected trailing room-table data')
-    return Layout(2, width, height, body[:cells], tuple(rooms))
+    return Layout(2, width, height, body[:cells], tuple(rooms),
+                  int.from_bytes(data[1:3], 'big'), header[6],
+                  tuple(header[4:6]), tuple(header[7:9]))
 
 
 def cell_color(value):

@@ -8,7 +8,8 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN python -m pip install --no-cache-dir -r requirements.txt
 COPY conga8290/ ./conga8290/
-COPY recover_key.py cecotec_conga8290_vacuum.yaml ./
+COPY recover_key.py inspect_map.py cecotec_conga8290_vacuum.yaml ./
+COPY experimental/ ./experimental/
 
 # Offline-only test stage. No account, APK, robot or secrets in the build.
 FROM base AS tests

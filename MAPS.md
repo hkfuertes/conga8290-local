@@ -43,7 +43,42 @@ This remains experimental and is not a HACS release. No actual floor plan
 or map file is shipped. Do not install the unmodified fork for this model: its map
 parser and room commands are incompatible or unvalidated, and it requests uploads.
 
-## Still separate
+## Python room inspection
+
+`inspect_map.py` now decodes an existing private v2 layout entirely offline:
+
+```sh
+python3 inspect_map.py --input /private/path/map.bin.stream \
+  --output-dir /private/path/new-room-report --source-kind phone_cache
+```
+
+Choose `phone_cache`, `history_snapshot` or `user_file` only to describe the input;
+this option does not verify its provenance/freshness. Input must be an owned regular
+non-symlink `0600` file. Outputs are a new `0700` directory with `0600` JSON, PNG and
+a self-contained SVG labeling the numeric room IDs. No account/APK/phone/HA setup
+or additional Python packages are needed for this offline command.
+
+Validation: 95 distribution tests passed, alongside 320 root research-tool tests.
+The private trial's SVG labels/embedded PNG and output permissions were checked;
+these checks do not validate orientation, square metres or independent download.
+
+The room report includes ID/name, floor+carpet cell count, carpet count, grid bounds,
+raw cleaning-option fields and optional unsigned polygon wire vertices. Raw header
+resolution/origin/dock values are preserved without guessing physical units. Raster
+hex keys differ from numeric room IDs: ID3 corresponds to floor byte `1f`, **not**
+command ID31. Pixel counts are not measured m², cleanable surface or guaranteed
+cleaning-command IDs; `area_m2` remains null and command validation false.
+Optional polygon panel coordinates use the source-proven signed-like/10/Y-flip
+transform; they are not declared physical or grid coordinates. Polygons may be
+absent even when the raster contains a complete segmented room.
+
+A separately scoped research-only read of the connected phone's exact map cache
+successfully decoded seven rooms and generated private reports without taps,
+logins, captures or robot commands. The cache reader is not included in the public
+CLI: it requires already-available phone access and does not refresh/download from
+the robot. No private floor plan, room report or actual household area is shipped.
+
+## Retrieval and controls remain separate
 
 A later explicitly authorized trial sent one DP16 `get_both` request through the
 existing Tuya Local connection, without starting cleaning. The fixed live objects

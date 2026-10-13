@@ -178,6 +178,22 @@ currently absent. Camera-only experimental source reuses the cornguo fork's came
 and Tuya Local device identification with an imported historical snapshot. It was
 **installed and verified on HA 2026.10.1**: the camera's actual PNG matches the
 downloaded layout, and a read-only dashboard card is configured. See [MAPS.md](MAPS.md).
+
+To inspect an **existing private v2 map file** with Python, without an account,
+APK, phone, HA or extra packages:
+
+```sh
+python3 inspect_map.py --input /private/path/map.bin \
+  --output-dir /private/path/new-map-report --source-kind user_file
+```
+
+The input must be owned by you with mode `0600`. The new output directory contains
+`rooms.json`, `map.png` and `room-ids.svg` (map with numeric room labels). It reports
+room names/IDs, segmented floor/carpet cell counts, grid bounds and optional raw
+polygon vertices/panel coordinates. **This is an offline inspector, not a map downloader or cleaning
+client.** Surface areas in m², physical coordinates and command acceptance remain
+unvalidated; freshness is explicitly unknown. Keep these private outputs out of Git
+and cloud sync. Existing files are never overwritten.
 No private map or account/storage credential is included. Room cleaning and live
 refresh are not implemented, and the recovery script is unchanged.
 
