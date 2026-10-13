@@ -73,6 +73,21 @@ authentication acknowledgement and robot acceptance remain unverified. No new
 login, robot connection or HA change was performed in that pass; its research
 helpers are not distributed as a working P2P client.
 
+Local retrieval remains the priority. Further APK/native analysis established a
+direct UDP data path and LAN signaling command 32, with local-key encryption and
+ordinary Tuya-style outgoing framing. Opening an accepted map session using only
+device ID/local key is still unproven: the examined app also obtains cloud-backed
+authentication material. Bounded passive observations during map-view reopening
+did not identify a map-data transfer. Neither these observations nor the static
+codec evidence establishes independent retrieval, freshness or Internet-free setup.
+The historical HA camera and vacuum configuration remain unchanged.
+
+[WebWire-NL/cecotec](https://github.com/WebWire-NL/cecotec) is a useful related
+Tuya Local reference for the Conga 11090. Its "DP map" documents datapoints, not
+floor-plan retrieval; it contains no P2P map downloader. Do not replace the 8290
+profile with its different model's YAML or follow its re-pairing advice: this
+project already recovers the local key while preserving Cecotec pairing.
+
 Orientation, bathroom-to-room-ID mapping, dock/path coordinate transforms,
 continuous OEM credential/session lifecycle, automatic refresh and room/zone command
 acceptance are unvalidated. Displaying a historical map does not enable “clean only
