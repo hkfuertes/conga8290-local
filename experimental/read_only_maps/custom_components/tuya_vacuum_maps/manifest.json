@@ -1,0 +1,14 @@
+{
+  "domain": "tuya_vacuum_maps",
+  "name": "Tuya Vacuum Maps (read-only historical snapshot)",
+  "version": "0.1.4.post1",
+  "config_flow": true,
+  "dependencies": [
+    "tuya_local"
+  ],
+  "requirements": [],
+  "documentation": "https://github.com/hkfuertes/conga8290-tuya-local",
+  "iot_class": "local_push",
+  "integration_type": "device",
+  "codeowners": []
+}

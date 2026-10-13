@@ -91,10 +91,11 @@ OpenAPI authentication or a working map. Its pinned dependency `tuya-vacuum==0.1
   explicitly raise `NotImplementedError`. Conga 8290 is not on the tested list.
 
 Separate local research decoded a real v2 phone-cache layout with seven rooms and
-tested an isolated adapter for the fork's existing camera payload. OEM storage-config
-access was also verified without a Tuya IoT project; ongoing signed map retrieval,
-refresh and HA map deployment are not yet validated. These research helpers are
-not part of this recovery distribution.
+tested an isolated adapter for the fork's existing camera payload. A historical
+cleaning map was then downloaded through the Cecotec OEM route without a Tuya IoT
+project. Live objects are absent; refresh and HA map deployment remain unvalidated.
+See [MAPS.md](MAPS.md) and the source-only camera experiment. The OEM account probes
+are not part of this recovery distribution.
 
 Do not install the unmodified fork expecting plug-and-play 8290 support: it can
 automatically request a new map upload, and its room-command format is not validated

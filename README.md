@@ -170,6 +170,16 @@ on the test HA instance: 56 registered entities, 25 enabled with valid read stat
 and 31 disabled by default. No robot commands were sent during deployment. The
 recovery script does not deploy the profile or modify HA automatically.
 
+### Maps (experimental, read-only)
+
+A Cecotec OEM historical map was downloaded and decoded as v2 with seven rooms,
+without a Tuya IoT project or robot upload request. The fixed live objects are
+currently absent. Camera-only experimental source reuses the cornguo fork's camera
+and Tuya Local device association with an imported historical snapshot; it has
+**not been installed or runtime-validated in HA**. See [MAPS.md](MAPS.md).
+No private map or account/storage credential is included. Room cleaning and live
+refresh are not implemented, and the recovery script is unchanged.
+
 ## Status and limitations
 
 ### Shared versus device-specific data
