@@ -1,127 +1,128 @@
 # Conga 8290 → Tuya Local
 
-Dos resultados: **perfil YAML de Tuya Local** y **ID + local_key** del robot.
-Recuperación puntual desde Python, sin Android/root, Frida ni proyecto Tuya IoT.
-Después, Home Assistant se comunica por LAN mediante Tuya Local, protocolo **3.3**.
+Two outputs: a **Tuya Local YAML profile** and the robot's **ID + local_key**.
+One-off recovery using Python, without Android/root, Frida or a Tuya IoT project.
+After setup, Home Assistant uses Tuya Local to communicate over LAN, protocol **3.3**.
 
-## Requisitos
+## Requirements
 
-- Targets: **macOS, Linux o Docker Linux**, Python **3.12/3.13** y dependencias.
-- **Linux amd64/x86_64 es compatible**: Unicorn emula las librerías ARM64 del
-  APK; no hace falta procesador ARM. Windows queda fuera del alcance.
-- Cuenta de la app Cecotec con email/contraseña e Internet para la recuperación.
-- XAPK compatible de Cecotec **1.2.9**, aportado localmente. Esta versión acepta
-  únicamente el APK y librerías cuyos hashes están fijados en el código.
-- Tuya Local instalado en Home Assistant para utilizar el YAML.
+- Targets: **macOS, Linux or Linux Docker**, Python **3.12/3.13** and dependencies.
+- **Linux amd64/x86_64 is supported**: Unicorn emulates the APK's ARM64 libraries;
+  an ARM processor is not required. Windows is out of scope.
+- A Cecotec app account with email/password and Internet access for recovery.
+- A compatible Cecotec **1.2.9** XAPK, supplied locally. This tool accepts only
+  the APK and libraries whose hashes are pinned in the source code.
+- Tuya Local installed in Home Assistant to use the YAML profile.
 
-El APK/XAPK y las librerías propietarias **no se distribuyen en este repo**. El
-importador extrae únicamente los tres recursos necesarios, verifica sus SHA-256
-y los deja en `artifacts/`, ignorado por Git. No sube ni ejecuta el APK en Android;
-las rutinas ARM64 seleccionadas se emulan localmente y con límites en Unicorn.
-No descargues una versión cualquiera: un recurso distinto falla cerrado.
+The APK/XAPK and proprietary libraries **are not distributed in this repository**.
+The importer extracts only the three required resources, verifies their SHA-256
+hashes and stores them in `artifacts/`, which Git ignores. It never uploads the APK
+or runs it on Android; selected ARM64 routines are emulated locally with bounded
+execution in Unicorn. Do not use an arbitrary version: mismatched resources fail closed.
 
-### Descargar la versión compatible
+### Download the compatible version
 
-[Cecotec 1.2.9 en APKPure](https://apkpure.com/cecotec/es.cecotec.forceclima/download/1.2.9)
+[Cecotec 1.2.9 on APKPure](https://apkpure.com/cecotec/es.cecotec.forceclima/download/1.2.9)
 
-- Paquete: `es.cecotec.forceclima`, versión **1.2.9 (versionCode 32)**.
-- Elegir **XAPK `arm64-v8a`**, aproximadamente **140.4 MB**; no `armeabi-v7a`.
-  Esta arquitectura es la de las librerías emuladas, no la del ordenador: también
-  se necesita esta variante para Linux/Docker amd64 y Mac.
-- El XAPK debe contener `es.cecotec.forceclima.apk` y `config.arm64_v8a.apk`.
-- SHA-256 del **XAPK completo** usado en las pruebas (coincide con el publicado
-  en la página consultada):
+- Package: `es.cecotec.forceclima`, version **1.2.9 (versionCode 32)**.
+- Choose **XAPK `arm64-v8a`**, approximately **140.4 MB**, not `armeabi-v7a`.
+  This is the architecture of the emulated libraries, not the host computer:
+  this variant is also required for Linux/Docker amd64 and Mac.
+- The XAPK must contain `es.cecotec.forceclima.apk` and `config.arm64_v8a.apk`.
+- SHA-256 of the **complete XAPK** used in testing (matches the hash published
+  on the page when checked):
   `a9862e4f1626b58a832782e58d9843f86c20d30934d7a63eebdfa872b55815e5`.
-- SHA-256 del **APK base interno**, distinto del hash del contenedor XAPK:
+- SHA-256 of the **internal base APK**, different from the XAPK container hash:
   `ed4356d58095a2a7cc542d34941c0040ca24ce77b90aafee3234732e9e65d3ef`.
 
-El importador verifica el APK base y las dos librerías internas por sus hashes,
-no solo el nombre/versión ni el hash del contenedor. Descargar localmente y pasar
-su ruta con `--xapk`; no es necesario instalarlo en un teléfono ni instalar APKPure.
+The importer verifies the base APK and both internal libraries by their hashes,
+not just the name/version or container hash. Download the XAPK locally and supply
+its path with `--xapk`; no phone installation or APKPure app is required.
 
-## Instalar y preparar
+## Install and prepare
 
 ```sh
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python recover_key.py --xapk /ruta/Cecotec_1.2.9_APKPure.xapk --check
+.venv/bin/python recover_key.py --xapk /path/to/Cecotec_1.2.9_APKPure.xapk --check
 ```
 
-Este check es offline: no pide cuenta ni hace login. La importación solo se necesita
-una vez; no reemplaza archivos existentes que no coincidan.
+This check is offline: it does not request account details or log in. Import is
+only required once; it does not replace existing files that do not match.
 
-## Obtener ID + clave
+## Recover ID + key
 
 ```sh
 .venv/bin/python recover_key.py
 ```
 
-País (España por defecto: 34) y email **visibles**. Contraseña con **asteriscos**,
-sin eco ni almacenamiento. No hay frase de confirmación ni flags adicionales de
-aprobación: **ejecutar este comando realiza un login nuevo**. Puede generar una
-alerta de dispositivo desconocido o afectar la sesión abierta de la app Cecotec.
+Country calling code (default: Spain, 34) and email are **visible**. Password input
+shows **asterisks**, without echoing or storing the password. There is no confirmation
+phrase or additional approval flag: **running this command performs a new login**.
+It may trigger an unknown-device alert or affect an existing Cecotec app session.
 
-El script permite seleccionar casa y Conga 8290 entre los dispositivos de esa
-cuenta. Si solo hay uno, lo selecciona automáticamente. No requiere captura antigua
-ni conocer previamente el ID o la clave. No admite otros productos por similitud
-de nombre. Hace un token, un login y **dos LISTs como máximo**, sin reintentos,
-logout, pairing ni comandos del robot. CAPTCHA/MFA/bloqueo detienen el proceso.
+The script lets you select a home and a Conga 8290 from the account's devices.
+A single matching item is selected automatically. No previous capture or knowledge
+of the robot's ID/key is required. Other products are not accepted just because
+their names look similar. It makes one token request, one login and **at most two
+LISTs**, with no retries, logout, pairing or robot commands. CAPTCHA/MFA/account
+restrictions stop the process.
 
-Solo guarda el dispositivo seleccionado en un archivo nuevo:
+Only the selected device is saved, in a new file:
 
 ```text
-private/robot-connection-<fecha>.json
+private/robot-connection-<timestamp>.json
 ```
 
-Campos: `id` y `local_key`. Archivo **0600**, carpeta **0700**. Al terminar también
-**imprime el ID y la clave en consola**, en un bloque JSON por stderr; stdout conserva
-el resumen de estado. No imprime contraseña, tokens, RSA, sesiones ni respuestas
-completas. El email puede quedar visible por el prompt. **No compartir capturas/logs
-de esa salida ni el JSON privado**, incluso en un repo privado. En Docker se recomienda
-mantener `--log-driver none`, como en los ejemplos.
+Fields: `id` and `local_key`. File mode **0600**, directory mode **0700**. On success,
+the script also **prints the ID and key to the console** as a JSON block on stderr;
+stdout retains the status summary. It does not print passwords, tokens, RSA values,
+sessions or full account responses. The email may remain visible after the prompt.
+**Do not share screenshots/logs of this output or the private JSON**, even in a
+private repository. In Docker, keep `--log-driver none`, as shown in the examples.
 
-### Parámetros de cuenta (opcionales)
+### Account arguments (optional)
 
 ```sh
-.venv/bin/python recover_key.py -c 34 -u usuario@example.com
-# Admitido, pero menos seguro; sustituir los valores localmente:
-.venv/bin/python recover_key.py -c 34 -u usuario@example.com -p 'CONTRASEÑA'
+.venv/bin/python recover_key.py -c 34 -u user@example.com
+# Supported, but less secure; replace the values locally:
+.venv/bin/python recover_key.py -c 34 -u user@example.com -p 'PASSWORD'
 ```
 
-Alias largos: `--country`, `--user` y `--password`. `-c` es el prefijo telefónico,
-sin `+` ni `00`, no un código ISO. Si falta algún parámetro, se pregunta localmente.
-**`-p` expone la contraseña en el historial y argumentos del proceso; en Docker,
-también en metadatos del contenedor**. El script no imprime ni guarda estos valores,
-pero no puede ocultarlos al sistema. Se recomienda `-c`/`-u` con el prompt de
-contraseña enmascarada. Los parámetros de cuenta no se aceptan con `--check`, ni
-la contraseña con `--token-only`. Si hay varias casas/robots, se pide selección
-interactiva incluso cuando se especifican todas las credenciales.
+Long aliases: `--country`, `--user` and `--password`. `-c` is a telephone calling
+code without `+` or `00`, not an ISO country code. Missing arguments are prompted
+locally. **`-p` exposes the password in shell history and process arguments; in
+Docker, it also appears in container metadata**. The script does not print or store
+these account values, but cannot hide them from the operating system. Prefer `-c`/`-u`
+with the masked password prompt. Account arguments are rejected with `--check`,
+and passwords are rejected with `--token-only`. Multiple homes/robots require
+interactive selection even when all credentials are supplied.
 
-Para comprobar únicamente token/RSA, sin contraseña ni login:
+To check token/RSA only, without a password or login:
 
 ```sh
 .venv/bin/python recover_key.py --token-only
 ```
 
-## Docker (Linux amd64, también desde Docker Desktop en Mac)
+## Docker (Linux amd64, also usable with Docker Desktop on Mac)
 
-La imagen contiene solo Python, dependencias, helpers y YAML. El XAPK, recursos
-extraídos y resultados privados van en **bind mounts**, nunca en la imagen.
-Desde la carpeta del repo:
+The image contains only Python, dependencies, helpers and the YAML profile.
+The XAPK, extracted resources and private results use **bind mounts**, never image
+layers. From the repository directory:
 
 ```sh
 docker build -t conga8290-key .
 mkdir -p artifacts private
 chmod 700 artifacts private
 
-# Preparación offline: sustituir /ruta/... por el XAPK local compatible.
+# Offline preparation: replace /path/to/... with the compatible local XAPK.
 docker run --rm --network none --log-driver none --read-only \
   --user "$(id -u):$(id -g)" --tmpfs /tmp \
   --mount "type=bind,src=$(pwd)/artifacts,dst=/app/artifacts" \
-  --mount "type=bind,src=/ruta/Cecotec_1.2.9_APKPure.xapk,dst=/input/app.xapk,readonly" \
+  --mount "type=bind,src=/path/to/Cecotec_1.2.9_APKPure.xapk,dst=/input/app.xapk,readonly" \
   conga8290-key --xapk /input/app.xapk --check
 
-# Recuperación interactiva: un login nuevo, sin comandos del robot.
+# Interactive recovery: a new login, without robot commands.
 docker run --rm -it --log-driver none --read-only \
   --user "$(id -u):$(id -g)" --tmpfs /tmp \
   --mount "type=bind,src=$(pwd)/artifacts,dst=/app/artifacts,readonly" \
@@ -129,72 +130,72 @@ docker run --rm -it --log-driver none --read-only \
   conga8290-key
 ```
 
-`-it` es necesario si hay prompts. Añadir `-c 34 -u EMAIL` después del nombre de
-imagen para evitar esos prompts; `-p` se admite pero se desaconseja. `--user` antes
-del nombre de imagen es el UID/GID Docker, no el email Cecotec. No usar
-`--privileged`, red host ni publicar puertos. No ejecutar estas instrucciones con
-`sudo`: los archivos deben pertenecer a tu usuario. La recuperación necesita salida
-HTTPS; la preparación y las pruebas se ejecutan sin acceso cloud.
+`-it` is required when using prompts. Add `-c 34 -u EMAIL` after the image name to
+skip those prompts; `-p` is supported but discouraged. `--user` before the image
+name is the Docker UID/GID, not the Cecotec email. Do not use `--privileged`, host
+networking or published ports. Do not run these instructions with `sudo`: files
+must belong to your user. Recovery needs outbound HTTPS; preparation and tests
+run without cloud access.
 
-Para probar la imagen sin cuenta ni APK:
+To test the image without an account or APK:
 
 ```sh
 docker build --target tests -t conga8290-tests .
 ```
 
-## Configurar Tuya Local
+## Configure Tuya Local
 
-1. Instalar `make-all/tuya-local` en HA (por ejemplo mediante HACS).
-2. Copiar `cecotec_conga8290_vacuum.yaml` a:
+1. Install `make-all/tuya-local` in HA (for example through HACS).
+2. Copy `cecotec_conga8290_vacuum.yaml` to:
    `/config/custom_components/tuya_local/devices/cecotec_conga8290_vacuum.yaml`.
-3. Recargar/reiniciar HA según el flujo de instalación de Tuya Local.
-4. Configurar el robot con su IP LAN, el `id` y la `local_key` recuperados; protocolo
-   **3.3**. El script no obtiene la IP ni cambia automáticamente HA.
+3. Reload/restart HA as required by the Tuya Local installation workflow.
+4. Configure the robot with its LAN IP, recovered `id` and `local_key`, using
+   protocol **3.3**. The script does not discover the IP or modify HA automatically.
 
-Conservar una copia del perfil: una actualización HACS puede sobrescribirlo.
-Evitar otro cliente LAN simultáneo mientras HA mantenga la conexión del robot.
+Keep a backup of the profile: a HACS update may overwrite it.
+Avoid running another LAN client while HA owns the robot's connection.
 
-## Estado y límites
+## Status and limitations
 
-### Qué es común y qué cambia
+### Shared versus device-specific data
 
-| Dato | Alcance |
+| Data | Scope |
 | --- | --- |
-| YAML, IDs/tipos de DP y `productId` (`kofl9ubyyyfznpxw`) | Perfil del mismo producto compatible, no de una unidad concreta. |
-| Registro OEM, certificado y material del APK | Comunes a esa versión compatible de la app, no credenciales de tu cuenta ni clave del robot. |
-| Protocolo LAN 3.3 | Verificado en el robot de prueba; no se garantiza para otras variantes/firmwares. |
-| `id` / `devId` | Identificador de cada robot; no confundirlo con el `id` bajo `products` del YAML. |
-| `local_key` | Clave de cada robot/provisionamiento; no se comparte entre unidades y puede cambiar tras re-pairing/reset. |
-| IP LAN | Depende de tu red/DHCP; no es una propiedad fija del modelo. |
-| Cuenta, país/región y casas | Datos de cada usuario/cuenta. |
-| Tokens/sesiones y deviceId del cliente Python | Datos de cada ejecución/login; ese deviceId no es el ID del robot. |
+| YAML, DP IDs/types and `productId` (`kofl9ubyyyfznpxw`) | Profile for the same compatible product, not a particular unit. |
+| OEM registration, certificate and APK material | Shared by that compatible app version; not account credentials or the robot's key. |
+| LAN protocol 3.3 | Verified on the test robot; not guaranteed for other variants/firmware. |
+| `id` / `devId` | Each robot's identifier; do not confuse it with the `id` under YAML `products`. |
+| `local_key` | Key for each robot/provisioning; not shared between units and may change after re-pairing/reset. |
+| LAN IP | Depends on your network/DHCP, not a fixed property of the model. |
+| Account, country/region and homes | Specific to each user/account. |
+| Tokens/sessions and the Python client's deviceId | Specific to each run/login; this deviceId is not the robot's ID. |
 
-La clave del robot **se obtiene del cloud tras autenticar la cuenta**: no se calcula
-a partir del ID ni existe una clave universal para todas las Conga 8290. El YAML
-es reutilizable para unidades con el mismo producto/esquema; no se ha probado con
-todas las unidades comercializadas bajo el nombre 8290 ni todos sus firmwares.
+The robot's key **is retrieved from the cloud after account authentication**:
+it is not calculated from the ID, and there is no universal key for all Conga 8290
+robots. The YAML is reusable for units with the same product/schema; it has not
+been tested with every unit sold under the 8290 name or every firmware version.
 
-Empaquetado verificado offline: **67 pruebas** en macOS (Python 3.12), Linux
-amd64 (Python 3.13) y Docker Linux amd64 (Python 3.13). Bootstrap real con recursos
-compatibles en Mac y Docker, sin red ni autenticación. La imagen Docker se probó
-como usuario no root, filesystem raíz de solo lectura y recursos en bind mounts.
-Docker Desktop en Mac no se ejecutó durante esta validación.
+Packaging verified offline: **67 tests** on macOS (Python 3.12), Linux amd64
+(Python 3.13) and Linux Docker amd64 (Python 3.13). Bootstrap with actual compatible
+resources was verified on Mac and Docker, without network access or authentication.
+The Docker image was tested as a non-root user with a read-only root filesystem
+and bind-mounted resources. Docker Desktop on Mac was not run during validation.
 
-El login OEM-UI y la recuperación cloud se verificaron con esta cuenta/modelo/APK;
-la clave coincide con la captura original. El YAML fue cargado en HA y se verificó
-lectura LAN 3.3. El selector empaquetado y los prompts se prueban offline con datos
-sintéticos: las pruebas no hacen otro login real. Los controles físicos, mapas,
-habitaciones, otras cuentas/regiones/APKs y operación prolongada sin Internet no
-están validados. Este repo es una herramienta puntual, no un daemon ni integración
-cloud permanente. Python no garantiza borrado seguro de secretos en RAM.
+OEM-UI login and cloud recovery were verified with the test account/model/APK;
+the key matches the original capture. The YAML was loaded in HA and LAN 3.3 reads
+were verified. The packaged selector and prompts are tested offline with synthetic
+data: tests never perform another real login. Physical controls, maps, rooms,
+other accounts/regions/APKs and prolonged operation without Internet access have
+not been validated. This is a one-off tool, not a daemon or permanent cloud
+integration. Python does not guarantee secure erasure of secrets from RAM.
 
-## Pruebas
+## Tests
 
 ```sh
 .venv/bin/python -m pip install -r requirements-dev.txt
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'
 ```
 
-No necesitan APK, cuenta, robot ni Home Assistant. No incluyen capturas personales,
-investigación Android ni dumps. `.gitignore` protege archivos de credenciales y
-recursos locales; aun así, revisar siempre los archivos antes de publicar.
+Tests require no APK, account, robot or Home Assistant. Personal captures, Android
+research and dumps are not included. `.gitignore` excludes credential files and
+local resources; always review files before publishing anyway.

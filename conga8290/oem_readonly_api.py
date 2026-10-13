@@ -77,6 +77,7 @@ def rejection_category(envelope):
                               (['session invalid', 'session expired', 'invalid session'], 'session_rejected'),
                               (['clientid', 'appkey', 'app key', 'ttid', 'client secret'], 'application_identity_rejected'),
                               (['illegal parameter', 'invalid parameter', 'timestamp'], 'request_parameters_rejected'),
+                              # Localized server text is protocol data, not CLI language.
                               (['too many attempts', 'too many requests', 'too frequent', 'account locked', 'demasiados intentos', 'cuenta bloqueada'], 'account_or_rate_limited'),
                               (['incorrect username or password', 'incorrect password', 'invalid password', 'password error', 'password does not match', 'wrong password', 'usuario o contraseña incorrect', 'contraseña incorrect', 'contrasena incorrect'], 'credentials_rejected'),
                               (['account does not exist', 'user does not exist', 'account not found', 'usuario no existe', 'cuenta no existe'], 'account_rejected'),

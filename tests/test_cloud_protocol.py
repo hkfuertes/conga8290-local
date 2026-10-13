@@ -87,7 +87,7 @@ class CloudProtocolTests(unittest.TestCase):
 
     def test_et3_roundtrip_and_random_nonces(self):
         key = bytes(range(16))
-        plaintext = '{"synthetic":"España"}'.encode()
+        plaintext = '{"synthetic":"snowman \u2603"}'.encode()
         first = encrypt_et3(plaintext, key)
         second = encrypt_et3(plaintext, key)
         self.assertNotEqual(first, second)

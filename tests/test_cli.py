@@ -28,7 +28,7 @@ class CliTests(unittest.TestCase):
                 self.assertEqual(recover_key.main(['--output-dir', str(output)]), 0)
             bootstrap.assert_called_once_with('EU', auth_flow='oem-ui')
             self.assertEqual(visible.call_count, 2)
-            masked.assert_called_once_with('Contraseña Cecotec: ')
+            masked.assert_called_once_with('Cecotec password: ')
             client.login.assert_called_once_with('synthetic-password', allow_new_session=True)
             value = json.loads(out.getvalue())
             path = Path(value['private_file'])
@@ -38,8 +38,10 @@ class CliTests(unittest.TestCase):
             self.assertEqual(value['status'], 'robot_key_recovered')
         client.close.assert_called_once()
         self.assertIn('"id": "synthetic-robot"', err.getvalue())
+        self.assertIn('Tuya Local credentials (do not share this output):', err.getvalue())
         self.assertIn('"local_key": "0123456789abcdef"', err.getvalue())
         self.assertNotIn('0123456789abcdef', out.getvalue())
+        # The old Spanish confirmation phrases must remain absent.
         for secret in ['synthetic-password', 'NUEVA SESION', 'NUEVA_SESION']:
             self.assertNotIn(secret, out.getvalue() + err.getvalue())
 
@@ -90,7 +92,7 @@ class CliTests(unittest.TestCase):
         masked.assert_not_called()
         client.email_token.assert_called_once_with('34', 'synthetic@example.invalid')
         client.login.assert_called_once_with('synthetic-password', allow_new_session=True)
-        self.assertIn('Aviso: -p', err.getvalue())
+        self.assertIn('Warning: -p', err.getvalue())
         self.assertNotIn('synthetic-password', out.getvalue() + err.getvalue())
         self.assertNotIn('synthetic@example.invalid', out.getvalue() + err.getvalue())
 
@@ -139,6 +141,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(recover_key.main(['-c', '+invalid-country', '-u', 'synthetic@example.invalid', '--output-dir', directory]), 1)
         visible.assert_not_called()
         client.email_token.assert_not_called()
+        self.assertIn('Invalid country calling code', err.getvalue())
         self.assertNotIn('+invalid-country', out.getvalue() + err.getvalue())
 
     def test_private_capture_never_overwrites_existing_file(self):
