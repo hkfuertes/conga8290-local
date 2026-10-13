@@ -1,0 +1,140 @@
+# EXPERIMENTAL: SDK schema + verified LAN status on protocol 3.3.
+# Profile loaded in HA; physical controls remain untested. No credentials here.
+name: Robot vacuum
+products:
+  - id: kofl9ubyyyfznpxw
+    manufacturer: Cecotec
+    model: Conga 8290 Immortal Ultra Power
+entities:
+  - entity: vacuum
+    dps:
+      - id: 1
+        type: boolean
+        name: command
+        mapping:
+          - dps_val: true
+            value: start
+          - dps_val: false
+            value: stop
+      # Expected pause semantics (true = paused) still need a physical test.
+      - id: 2
+        type: boolean
+        name: activate
+        mapping:
+          - dps_val: true
+            value: false
+          - dps_val: false
+            value: true
+      - id: 5
+        type: string
+        name: status
+        mapping:
+          - dps_val: standby
+            value: standby
+          - dps_val: smart
+            value: cleaning
+          - dps_val: zone_clean
+            value: zone cleaning
+          - dps_val: paused
+            value: paused
+          - dps_val: goto_pos
+            value: going to location
+          - dps_val: pos_arrived
+            value: standby
+          - dps_val: pos_unarrive
+            value: standby
+          - dps_val: goto_charge
+            value: returning
+          - dps_val: charging
+            value: charging
+          - dps_val: charge_done
+            value: docked
+          - dps_val: sleep
+            value: sleep
+          - dps_val: select_room
+            value: room cleaning
+          - dps_val: part_clean
+            value: partial cleaning
+          - dps_val: game
+            value: game
+          - dps_val: mapping
+            value: mapping
+          - dps_val: collecting_dust
+            value: emptying
+          - dps_val: manual
+            value: manual control
+      - id: 9
+        type: string
+        name: fan_speed
+        mapping:
+          - dps_val: close
+            value: "off"
+          - dps_val: gentle
+            value: low
+          - dps_val: normal
+            value: medium
+          - dps_val: strong
+            value: high
+          - dps_val: max
+            value: maximum
+      - id: 11
+        type: boolean
+        optional: true
+        name: locate
+      - id: 28
+        type: bitfield
+        optional: true
+        name: error
+        mapping:
+          - dps_val: 0
+            value: false
+          - value: true
+  # vacuum.return_to_base is NOT provided by this draft: DP3 is independent.
+  - entity: button
+    name: Return to base
+    icon: "mdi:home-import-outline"
+    dps:
+      - id: 3
+        type: boolean
+        name: button
+  - entity: sensor
+    class: battery
+    dps:
+      - id: 8
+        type: integer
+        name: sensor
+        unit: "%"
+        class: measurement
+  - entity: sensor
+    name: Cleaning time
+    class: duration
+    dps:
+      - id: 6
+        type: integer
+        name: sensor
+        unit: min
+        class: measurement
+  - entity: sensor
+    name: Cleaned area
+    class: area
+    dps:
+      - id: 7
+        type: integer
+        name: sensor
+        unit: m2
+        class: measurement
+  - entity: select
+    translation_key: mopping
+    dps:
+      - id: 10
+        type: string
+        name: option
+        mapping:
+          - dps_val: close
+            value: "off"
+          - dps_val: low
+            value: low
+          - dps_val: middle
+            value: medium
+          - dps_val: high
+            value: high

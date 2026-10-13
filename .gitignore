@@ -1,0 +1,15 @@
+# Personal credentials and local proprietary application resources: never commit.
+/private/
+/artifacts/
+*.json
+*.apk
+*.xapk
+*.so
+.env
+.env.*
+.venv*/
+venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+.test-*/

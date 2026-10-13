@@ -1,0 +1,12 @@
+# Allowlist only: personal captures and proprietary artifacts never enter build context.
+**
+!Dockerfile
+!.dockerignore
+!requirements.txt
+!requirements-dev.txt
+!recover_key.py
+!cecotec_conga8290_vacuum.yaml
+!conga8290/
+!conga8290/*.py
+!tests/
+!tests/*.py
