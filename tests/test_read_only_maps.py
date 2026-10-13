@@ -11,6 +11,7 @@ import sys
 import tempfile
 from types import ModuleType
 import unittest
+import yaml
 
 
 COMPONENT = Path(__file__).resolve().parents[1] / 'experimental/read_only_maps/custom_components/tuya_vacuum_maps'
@@ -148,6 +149,16 @@ class ReadOnlyMapsTests(unittest.TestCase):
     def test_no_real_map_artifacts_in_experimental_tree(self):
         for suffix in ['*.bin', '*.png', '*.stream', '*.so', '*.apk']:
             self.assertEqual(list(COMPONENT.rglob(suffix)), [])
+
+    def test_dashboard_uses_standard_camera_card_without_robot_actions(self):
+        path = COMPONENT.parents[1] / 'dashboard.yaml'
+        config = yaml.safe_load(path.read_text())
+        cards = config['views'][0]['cards']
+        self.assertEqual([card['type'] for card in cards], ['markdown', 'picture-entity'])
+        self.assertEqual(cards[1]['entity'], 'camera.conga_8290_map')
+        self.assertEqual(cards[1]['tap_action']['action'], 'more-info')
+        self.assertNotIn('call-service', path.read_text())
+        self.assertNotIn('vacuum.start', path.read_text())
 
 
 if __name__ == '__main__':

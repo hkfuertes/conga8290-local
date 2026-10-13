@@ -175,8 +175,9 @@ recovery script does not deploy the profile or modify HA automatically.
 A Cecotec OEM historical map was downloaded and decoded as v2 with seven rooms,
 without a Tuya IoT project or robot upload request. The fixed live objects are
 currently absent. Camera-only experimental source reuses the cornguo fork's camera
-and Tuya Local device association with an imported historical snapshot; it has
-**not been installed or runtime-validated in HA**. See [MAPS.md](MAPS.md).
+and Tuya Local device identification with an imported historical snapshot. It was
+**installed and verified on HA 2026.10.1**: the camera's actual PNG matches the
+downloaded layout, and a read-only dashboard card is configured. See [MAPS.md](MAPS.md).
 No private map or account/storage credential is included. Room cleaning and live
 refresh are not implemented, and the recovery script is unchanged.
 

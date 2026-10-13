@@ -1,7 +1,7 @@
 # Conga 8290 maps: verified milestones
 
-The existing Tuya Local vacuum/profile stays unchanged. **No map camera has been
-installed or validated in HA yet.**
+The existing Tuya Local vacuum/profile stays unchanged. **The read-only historical
+map camera is installed and verified on HA 2026.10.1.**
 
 ## What now works
 
@@ -24,8 +24,22 @@ device association, with a bounded v2 renderer and imported historical snapshot.
 Only the camera platform remains. There are no account credentials, cloud clients,
 room commands, map-upload requests, polling or capability/parser patches.
 
-This is source-only, tested offline, and not a HACS release. An approved HA trial is
-still needed, and a full restart must be approved separately. No actual floor plan
+The approved HA trial passed configuration checking and used one Core restart to
+discover the new integration. `camera.conga_8290_map` loaded and served PNG bytes
+identical to the privately downloaded layout. Only one camera entity was registered;
+the existing 25 enabled robot entities remained valid, with no missing/unavailable
+states. The working vacuum YAML was unchanged and the robot remained docked.
+
+A dedicated `Conga map` dashboard at `/conga-map/map` contains a standard
+picture-entity card; no custom card is required for this snapshot milestone. The
+camera image and stored card were checked through official HA APIs. Browser
+appearance/orientation still need user review.
+
+HA 2026.10 keeps device records separate per config entry. The map and vacuum share
+the same Tuya Local identifier, but do not share one registry device ID. Existing
+vacuum/device records were not forced together or edited to bypass that behavior.
+
+This remains experimental and is not a HACS release. No actual floor plan
 or map file is shipped. Do not install the unmodified fork for this model: its map
 parser and room commands are incompatible or unvalidated, and it requests uploads.
 

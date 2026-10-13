@@ -93,7 +93,8 @@ OpenAPI authentication or a working map. Its pinned dependency `tuya-vacuum==0.1
 Separate local research decoded a real v2 phone-cache layout with seven rooms and
 tested an isolated adapter for the fork's existing camera payload. A historical
 cleaning map was then downloaded through the Cecotec OEM route without a Tuya IoT
-project. Live objects are absent; refresh and HA map deployment remain unvalidated.
+project. Live objects are absent; the historical camera is verified on HA 2026.10.1,
+but live refresh remains unvalidated.
 See [MAPS.md](MAPS.md) and the source-only camera experiment. The OEM account probes
 are not part of this recovery distribution.
 
