@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recupera ID/local_key del Conga 8290 y guárdalos privadamente para Tuya Local.
+"""Recupera ID/local_key del Conga 8290, muéstralos y guárdalos para Tuya Local.
 
 Sin Android/root. País/email visibles; contraseña con *. Un token, un login y dos
 listados como máximo. Invocar este script autoriza ese login: puede alertar como
@@ -130,9 +130,15 @@ def main(argv=None):
                     raise ValueError('conga_8290_not_found')
                 robot = choose(robots, 'Conga 8290')
                 stage = 'private_output'
-                output = save_robot(args.output_dir.expanduser(), client.select_robot(robot['id']))
+                selected = client.select_robot(robot['id'])
+                output = save_robot(args.output_dir.expanduser(), selected)
                 result.update(status='robot_key_recovered', private_file=str(output), lan_protocol='3.3')
                 print(f'ID y clave guardados en {output}. No se ha modificado Home Assistant.', file=sys.stderr)
+                print('Credenciales para Tuya Local (no compartir esta salida):', file=sys.stderr)
+                # Explicitly requested console output; only this robot's two fields.
+                # JSON escaping prevents credentials from injecting terminal controls.
+                print(json.dumps({'id': selected['id'], 'local_key': selected['local_key']}, indent=2), file=sys.stderr)
+                del selected
     except (Exception, KeyboardInterrupt) as exc:
         result.update(status='not_completed', safe_stage=stage, error_type=type(exc).__name__)
         category = getattr(exc, 'category', None)

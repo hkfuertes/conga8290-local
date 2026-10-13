@@ -37,7 +37,10 @@ class CliTests(unittest.TestCase):
             self.assertEqual(stat.S_IMODE(output.stat().st_mode), 0o700)
             self.assertEqual(value['status'], 'robot_key_recovered')
         client.close.assert_called_once()
-        for secret in ['synthetic-password', '0123456789abcdef', 'NUEVA SESION', 'NUEVA_SESION']:
+        self.assertIn('"id": "synthetic-robot"', err.getvalue())
+        self.assertIn('"local_key": "0123456789abcdef"', err.getvalue())
+        self.assertNotIn('0123456789abcdef', out.getvalue())
+        for secret in ['synthetic-password', 'NUEVA SESION', 'NUEVA_SESION']:
             self.assertNotIn(secret, out.getvalue() + err.getvalue())
 
     def test_check_never_prompts_or_authenticates(self):
@@ -78,7 +81,7 @@ class CliTests(unittest.TestCase):
             recover_key.main(['--unknown-credential', 'synthetic-argument-secret'])
         self.assertNotIn('synthetic-argument-secret', err.getvalue())
 
-    def test_all_account_arguments_skip_prompts_without_printing_secrets(self):
+    def test_all_account_arguments_skip_prompts_without_printing_account_secrets(self):
         client = self.client()
         out, err = io.StringIO(), io.StringIO()
         with tempfile.TemporaryDirectory() as directory, patch('conga8290.oem_rootless_client.RootlessClient.from_package', return_value=client), patch('recover_key.visible_input') as visible, patch('recover_key.masked_password') as masked, redirect_stdout(out), redirect_stderr(err):
@@ -90,6 +93,28 @@ class CliTests(unittest.TestCase):
         self.assertIn('Aviso: -p', err.getvalue())
         self.assertNotIn('synthetic-password', out.getvalue() + err.getvalue())
         self.assertNotIn('synthetic@example.invalid', out.getvalue() + err.getvalue())
+
+    def test_console_credentials_escape_controls_and_exclude_other_fields(self):
+        client = self.client()
+        client.select_robot.return_value = {'id': 'synthetic-robot\x1b[31m', 'local_key': '0123456789abcdef',
+                                           'sid': 'synthetic-session-secret', 'token': 'synthetic-token-secret'}
+        out, err = io.StringIO(), io.StringIO()
+        with tempfile.TemporaryDirectory() as directory, patch('conga8290.oem_rootless_client.RootlessClient.from_package', return_value=client), patch('recover_key.visible_input', side_effect=['34', 'synthetic@example.invalid']), patch('recover_key.masked_password', return_value='synthetic-password'), redirect_stdout(out), redirect_stderr(err):
+            self.assertEqual(recover_key.main(['--output-dir', directory]), 0)
+        self.assertIn('synthetic-robot\\u001b[31m', err.getvalue())
+        self.assertIn('0123456789abcdef', err.getvalue())
+        self.assertNotIn('\x1b', err.getvalue())
+        for secret in ['synthetic-session-secret', 'synthetic-token-secret', 'synthetic-password']:
+            self.assertNotIn(secret, out.getvalue() + err.getvalue())
+
+    def test_failed_private_save_does_not_display_robot_credentials(self):
+        client = self.client()
+        out, err = io.StringIO(), io.StringIO()
+        with tempfile.TemporaryDirectory() as directory, patch('conga8290.oem_rootless_client.RootlessClient.from_package', return_value=client), patch('recover_key.visible_input', side_effect=['34', 'synthetic@example.invalid']), patch('recover_key.masked_password', return_value='synthetic-password'), patch('recover_key.save_robot', side_effect=OSError('synthetic-disk-secret')), redirect_stdout(out), redirect_stderr(err):
+            self.assertEqual(recover_key.main(['--output-dir', directory]), 1)
+        for secret in ['0123456789abcdef', 'synthetic-disk-secret', 'synthetic-password']:
+            self.assertNotIn(secret, out.getvalue() + err.getvalue())
+        client.close.assert_called_once()
 
     def test_user_country_arguments_still_prompt_for_password(self):
         client = self.client()

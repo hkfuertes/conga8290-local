@@ -20,6 +20,25 @@ y los deja en `artifacts/`, ignorado por Git. No sube ni ejecuta el APK en Andro
 las rutinas ARM64 seleccionadas se emulan localmente y con límites en Unicorn.
 No descargues una versión cualquiera: un recurso distinto falla cerrado.
 
+### Descargar la versión compatible
+
+[Cecotec 1.2.9 en APKPure](https://apkpure.com/cecotec/es.cecotec.forceclima/download/1.2.9)
+
+- Paquete: `es.cecotec.forceclima`, versión **1.2.9 (versionCode 32)**.
+- Elegir **XAPK `arm64-v8a`**, aproximadamente **140.4 MB**; no `armeabi-v7a`.
+  Esta arquitectura es la de las librerías emuladas, no la del ordenador: también
+  se necesita esta variante para Linux/Docker amd64 y Mac.
+- El XAPK debe contener `es.cecotec.forceclima.apk` y `config.arm64_v8a.apk`.
+- SHA-256 del **XAPK completo** usado en las pruebas (coincide con el publicado
+  en la página consultada):
+  `a9862e4f1626b58a832782e58d9843f86c20d30934d7a63eebdfa872b55815e5`.
+- SHA-256 del **APK base interno**, distinto del hash del contenedor XAPK:
+  `ed4356d58095a2a7cc542d34941c0040ca24ce77b90aafee3234732e9e65d3ef`.
+
+El importador verifica el APK base y las dos librerías internas por sus hashes,
+no solo el nombre/versión ni el hash del contenedor. Descargar localmente y pasar
+su ruta con `--xapk`; no es necesario instalarlo en un teléfono ni instalar APKPure.
+
 ## Instalar y preparar
 
 ```sh
@@ -54,10 +73,12 @@ Solo guarda el dispositivo seleccionado en un archivo nuevo:
 private/robot-connection-<fecha>.json
 ```
 
-Campos: `id` y `local_key`. Archivo **0600**, carpeta **0700**. No se imprimen la
-clave, la contraseña, tokens, RSA, sesiones ni respuestas completas. El email puede
-quedar visible en tu terminal porque así se solicita. No compartir el JSON privado,
-incluso en un repo privado.
+Campos: `id` y `local_key`. Archivo **0600**, carpeta **0700**. Al terminar también
+**imprime el ID y la clave en consola**, en un bloque JSON por stderr; stdout conserva
+el resumen de estado. No imprime contraseña, tokens, RSA, sesiones ni respuestas
+completas. El email puede quedar visible por el prompt. **No compartir capturas/logs
+de esa salida ni el JSON privado**, incluso en un repo privado. En Docker se recomienda
+mantener `--log-driver none`, como en los ejemplos.
 
 ### Parámetros de cuenta (opcionales)
 
@@ -135,7 +156,25 @@ Evitar otro cliente LAN simultáneo mientras HA mantenga la conexión del robot.
 
 ## Estado y límites
 
-Empaquetado verificado offline: **65 pruebas** en macOS (Python 3.12), Linux
+### Qué es común y qué cambia
+
+| Dato | Alcance |
+| --- | --- |
+| YAML, IDs/tipos de DP y `productId` (`kofl9ubyyyfznpxw`) | Perfil del mismo producto compatible, no de una unidad concreta. |
+| Registro OEM, certificado y material del APK | Comunes a esa versión compatible de la app, no credenciales de tu cuenta ni clave del robot. |
+| Protocolo LAN 3.3 | Verificado en el robot de prueba; no se garantiza para otras variantes/firmwares. |
+| `id` / `devId` | Identificador de cada robot; no confundirlo con el `id` bajo `products` del YAML. |
+| `local_key` | Clave de cada robot/provisionamiento; no se comparte entre unidades y puede cambiar tras re-pairing/reset. |
+| IP LAN | Depende de tu red/DHCP; no es una propiedad fija del modelo. |
+| Cuenta, país/región y casas | Datos de cada usuario/cuenta. |
+| Tokens/sesiones y deviceId del cliente Python | Datos de cada ejecución/login; ese deviceId no es el ID del robot. |
+
+La clave del robot **se obtiene del cloud tras autenticar la cuenta**: no se calcula
+a partir del ID ni existe una clave universal para todas las Conga 8290. El YAML
+es reutilizable para unidades con el mismo producto/esquema; no se ha probado con
+todas las unidades comercializadas bajo el nombre 8290 ni todos sus firmwares.
+
+Empaquetado verificado offline: **67 pruebas** en macOS (Python 3.12), Linux
 amd64 (Python 3.13) y Docker Linux amd64 (Python 3.13). Bootstrap real con recursos
 compatibles en Mac y Docker, sin red ni autenticación. La imagen Docker se probó
 como usuario no root, filesystem raíz de solo lectura y recursos en bind mounts.
