@@ -104,6 +104,25 @@ def main():
         os.chmod(tmp, 0o600); tmp.rename(SESSION_FILE)
         print(f'    session saved → {SESSION_FILE}')
 
+    if '--export-native' in sys.argv:
+        # dump everything the Go binary (native/conga) needs: no XAPK/unicorn there
+        out = {'lan': {'device_id': ctx['devId'], 'ip': '192.168.0.239',
+                       'local_key': 'REDACTED_LOCAL_KEY'},
+               'cloud': {'sid': client.session['sid'], 'ecode': client.session['ecode'],
+                         'api_url': client.session['mobile_api_url'],
+                         'gid': int(ctx['gid']), 'dev_id': ctx['devId'],
+                         'ch_key': client.ch_key, 'material_hex': client.material.hex(),
+                         'client_id': client.context['mAppId'],
+                         'app_version': client.context['mAppVersion'],
+                         'ttid': client.context['mTtid'],
+                         'phone_device_id': client.context['mDeviceId']}}
+        target = SESSION_FILE.parent / 'native.json'
+        tmp = target.with_suffix('.tmp')
+        tmp.write_text(json.dumps(out))
+        os.chmod(tmp, 0o600); tmp.rename(target)
+        print(f'native config exported → {target}')
+        return
+
     if '--call' in sys.argv:
         i = sys.argv.index('--call')
         method, ver = sys.argv[i + 1], sys.argv[i + 2]
