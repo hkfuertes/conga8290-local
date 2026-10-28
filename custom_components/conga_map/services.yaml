@@ -6,11 +6,11 @@ refresh_map:
 roomclean:
   name: Clean rooms
   description: >
-    Limpia las habitaciones indicadas. ¡MUEVE EL ROBOT físicamente!
+    Limpia las habitaciones indicadas (frame 0x14 por DP15). ¡MUEVE EL ROBOT!
   fields:
     rooms:
       name: Rooms
-      description: IDs de habitación (ver atributos de los switches Room*)
+      description: IDs de habitación (ver switches Room*) o formato card [{room: N}]
       required: true
       example: [3, 5]
       selector:
@@ -26,3 +26,8 @@ roomclean:
           min: 1
           max: 3
           step: 1
+install_template:
+  name: Reinstall tuya_local template
+  description: >
+    Copia la plantilla YAML del Conga 8290 a custom_components/tuya_local/devices/
+    (tuya_local la borra en cada actualización).

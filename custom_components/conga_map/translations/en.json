@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conga 8290 (Cecotec cloud login)",
+        "description": "Login recovers the local_key automatically. tuya_local stays in charge of control.",
+        "data": {
+          "email": "Cecotec account email",
+          "password": "Password",
+          "country_code": "Country code (e.g. 34)",
+          "host": "Robot IP address",
+          "upload_wait": "Seconds to wait for the cloud upload (default 45)"
+        }
+      }
+    },
+    "error": {
+      "login_failed": "Login failed: check email/password/country",
+      "no_home": "No home found in the account",
+      "no_robot": "No Conga 8290 found in this account",
+      "host_required": "Robot IP required (or add a tuya_local.yaml)"
+    }
+  }
+}

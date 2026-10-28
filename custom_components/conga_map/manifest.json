@@ -3,10 +3,10 @@
   "name": "Conga Map",
   "codeowners": ["@hkfuertes"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["persistent_notification"],
   "documentation": "https://github.com/hkfuertes/conga8290-tuya-local",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/hkfuertes/conga8290-tuya-local/issues",
-  "requirements": [],
-  "version": "0.1.0"
+  "requirements": ["Pillow>=10.1.0", "cryptography>=42.0.0"],
+  "version": "0.2.0"
 }

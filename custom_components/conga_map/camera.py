@@ -1,6 +1,5 @@
-"""Map camera: serves the latest PNG produced by `conga getmap`."""
+"""Map camera: serves the rendered PNG + card-facing attributes."""
 import logging
-import os
 
 from homeassistant.components.camera import Camera
 from homeassistant.config_entries import ConfigEntry
@@ -30,8 +29,8 @@ class CongaMapCamera(Camera):
     @property
     def extra_state_attributes(self):
         attrs = dict(self._coord.latest or {})
-        # lovelace-xiaomi-vacuum-map-card lee este atributo de la cámara
-        # (calibration_source: camera: true) → cero copy-paste de puntos
+        # lovelace-xiaomi-vacuum-map-card reads this attribute with
+        # calibration_source: {camera: true} -> zero copy-paste
         if "calibration" in attrs:
             attrs["calibration_points"] = [
                 {"vacuum": {"x": p["vacuum"]["X"], "y": p["vacuum"]["Y"]},
@@ -41,9 +40,4 @@ class CongaMapCamera(Camera):
         return attrs
 
     async def async_camera_image(self, width=None, height=None) -> bytes | None:
-        path = self._coord.png_path()
-        if not path or not os.path.exists(path):
-            return None
-        return await self.hass.async_add_executor_job(
-            lambda: open(path, "rb").read()
-        )
+        return self._coord.png

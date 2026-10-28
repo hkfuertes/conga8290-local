@@ -1,4 +1,4 @@
-"""Per-room selection switches (cornguo-style) fed by conga getmap rooms."""
+"""Per-room selection switches fed by the decoded map rooms."""
 import logging
 
 from homeassistant.components.switch import SwitchEntity
@@ -15,26 +15,27 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coord = hass.data[DOMAIN][entry.entry_id]
-    rooms_switches = [RoomSwitch(coord, r) for r in coord.rooms()]
-    async_add_entities(rooms_switches)
+    switches: list[RoomSwitch] = []
 
     @callback
-    def _refresh():
-        have = {s.room_id for s in rooms_switches}
+    def _sync():
+        have = {s.room_id for s in switches}
         new = [RoomSwitch(coord, r) for r in coord.rooms() if r["ID"] not in have]
         if new:
+            switches.extend(new)
             async_add_entities(new)
 
-    coord.listeners.append(_refresh)
+    _sync()
+    coord.listeners.append(_sync)
 
 
 class RoomSwitch(SwitchEntity):
-    """Toggle = mark room for the next 'clean selected' button press."""
+    """Toggle = mark room for the 'Clean selected rooms' button."""
 
     def __init__(self, coord, room: dict) -> None:
         self._coord = coord
         self.room_id = room["ID"]
-        self._attr_name = f"Room {room['Name']}"
+        self._attr_name = f"Room {room.get('Name') or room['ID']}"
         self._attr_unique_id = f"{DOMAIN}_room_{self.room_id}"
         self._on = False
         self._extra = dict(room)
@@ -47,6 +48,11 @@ class RoomSwitch(SwitchEntity):
     def extra_state_attributes(self):
         return self._extra
 
+    @callback
+    def clear(self):
+        self._on = False
+        self.schedule_update_ha_state()
+
     def turn_on(self, **kwargs):
         self._on = True
         self.schedule_update_ha_state()
@@ -58,8 +64,3 @@ class RoomSwitch(SwitchEntity):
     @property
     def available(self) -> bool:
         return any(r["ID"] == self.room_id for r in self._coord.rooms())
-
-    @callback
-    def clear(self):
-        self._on = False
-        self.schedule_update_ha_state()
