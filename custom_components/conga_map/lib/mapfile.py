@@ -275,8 +275,10 @@ if __name__ == "__main__":
         "time_1793123225_mapid_1793123236": {1: 1099, 2: 1084, 3: 1629, 4: 1329, 5: 2514, 6: 6731, 7: 1962},
         "time_1793123358_mapid_1793123369": {1: 1087, 2: 1084, 3: 1627, 4: 1331, 5: 2530, 6: 6710, 7: 1953},
     }
-    files = sorted(glob.glob("maps/*.bin"))
-    assert files, "no maps/*.bin found — run from repo root"
+    # sample maps were removed from the repo (privacy: real floor plans);
+    # drop any private *.bin into maps/ to run the oracle self-check
+    files = [f for f in sorted(glob.glob("maps/*.bin"))
+             if Path(f).stem in EXPECTED]
     checked = 0
     for f in files:
         d = decode_file(f)
@@ -286,5 +288,5 @@ if __name__ == "__main__":
         got = {r["ID"]: r["Pixels"] for r in d["rooms"]}
         assert got == exp, f"{f}: {got} != {exp}"
         checked += 1
-    assert checked, "no expected map matched"
+    assert checked, "no expected map found in maps/ (samples removed for privacy — drop your own *.bin there to run the oracle)"
     print(f"OK: {checked} maps, room pixel counts match oracle")
