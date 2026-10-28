@@ -29,6 +29,13 @@ entities:
             value: false
           - dps_val: false
             value: true
+      - id: 3
+        type: boolean
+        name: command
+        optional: true
+        mapping:
+          - dps_val: true
+            value: return_to_base
       - id: 5
         type: string
         name: status
@@ -93,14 +100,6 @@ entities:
           - dps_val: 0
             value: false
           - value: true
-  # vacuum.return_to_base is NOT provided: DP3 is an independent button.
-  - entity: button
-    name: Return to base
-    icon: "mdi:home-import-outline"
-    dps:
-      - id: 3
-        type: boolean
-        name: button
   - entity: sensor
     class: battery
     dps:
