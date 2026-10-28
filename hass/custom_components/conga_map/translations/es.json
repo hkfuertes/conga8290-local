@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "binary_path": "Ruta al binario conga (p. ej. /config/conga, arm64)",
+          "config_path": "Ruta al config del binario (CONGA_CONFIG)",
+          "tuya_local_yaml": "Ruta al YAML de tuya_local (credenciales LAN)",
+          "map_dir": "Directorio de salida de mapas",
+          "upload_wait": "Segundos de espera de subida a la nube"
+        }
+      }
+    },
+    "error": {
+      "binary_missing": "No encuentro el binario conga en esa ruta"
+    }
+  }
+}
