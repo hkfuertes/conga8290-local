@@ -225,7 +225,7 @@ def _map_json(md: dict, bin_path: str = "", png_path: str = "") -> dict:
                 "Name": name,
                 "AreaM2": pix * hd["resolution"] * hd["resolution"],
                 "Zone": zone,
-                "BBoxPx": bbox.get(r["id"], [0, 0, 0, 0]),  # píxeles: para la card (x0,y0,x1,y1)
+                "BBoxPx": bbox.get(r["id"], [0, 0, 0, 0]),  # pixels, card contract (x0,y0,x1,y1)
             }
         )
 
