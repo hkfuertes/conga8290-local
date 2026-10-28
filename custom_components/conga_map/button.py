@@ -58,7 +58,7 @@ class ReinstallTemplateButton(ButtonEntity):
             self._coord.install_tuya_local_profile
         )
         self._coord.hass.components.persistent_notification.async_create(
-            title="Plantilla tuya_local reinstalada",
+            title="tuya_local template reinstalled",
             message=dst,
             notification_id=f"{DOMAIN}_template",
         )

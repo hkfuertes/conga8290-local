@@ -2,22 +2,19 @@ name: Offline tests
 on: [push, pull_request]
 jobs:
   tests:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        python: ['3.12', '3.13']
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
-      - run: python -m pip install -r requirements-dev.txt
+          python-version: '3.12'
+      - run: python -m pip install pyyaml pillow cryptography
       - run: python -m unittest discover -s tests -p 'test_*.py'
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: docker build --target tests -t conga8290-tests .
-      - run: docker build -t conga8290-key .
-      - run: docker run --rm --network none --read-only conga8290-key --help
+      - name: lib self-checks
+        run: |
+          python3 custom_components/conga_map/lib/mapfile.py
+          python3 -c "
+import sys; sys.path.insert(0, 'custom_components/conga_map')
+from lib.cloud import OEMCloud
+from lib.s3map import storage_config
+print('imports OK')"

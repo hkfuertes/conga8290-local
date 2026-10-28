@@ -5,6 +5,9 @@ map camera is installed and verified on HA 2026.10.1.**
 
 ## Native binary `conga` (2026-10-28, feat/native-binary)
 
+> Historical: the Go CLI was removed after its logic was fully ported to the
+> pure-Python `conga_map` integration (`lib/`); this section keeps the findings.
+
 Single static Go binary (docker-only builds, amd64+arm64) replacing the whole
 Python toolchain for daily use:
 

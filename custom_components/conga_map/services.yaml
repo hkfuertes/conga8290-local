@@ -1,23 +1,23 @@
 refresh_map:
   name: Refresh map
   description: >
-    Pide el mapa al robot (get_both), espera la subida a la nube y descarga,
-    decodifica y renderiza el PNG. Tarda ~1 minuto.
+    Requests the map from the robot (get_both), waits for the cloud upload,
+    then downloads, decodes and renders the PNG. Takes about a minute.
 roomclean:
   name: Clean rooms
   description: >
-    Limpia las habitaciones indicadas (frame 0x14 por DP15). ¡MUEVE EL ROBOT!
+    Cleans the given rooms (0x14 frame over DP15). WARNING: this MOVES the robot!
   fields:
     rooms:
       name: Rooms
-      description: IDs de habitación (ver switches Room*) o formato card [{room: N}]
+      description: Room IDs (see Room* switches) or card format [{room: N}]
       required: true
       example: [3, 5]
       selector:
         object:
     passes:
       name: Passes
-      description: Pasadas por habitación (1-3)
+      description: Cleaning passes per room (1-3)
       required: false
       default: 1
       example: 2
@@ -29,5 +29,5 @@ roomclean:
 install_template:
   name: Reinstall tuya_local template
   description: >
-    Copia la plantilla YAML del Conga 8290 a custom_components/tuya_local/devices/
-    (tuya_local la borra en cada actualización).
+    Copies the embedded Conga 8290 profile to custom_components/tuya_local/devices/
+    (tuya_local wipes that directory on every update).

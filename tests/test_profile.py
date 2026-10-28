@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 import yaml
 
-from conga8290.oem_rootless_client import CONGA_PRODUCT
+CONGA_PRODUCT = "kofl9ubyyyfznpxw"  # product id checked at cloud discovery
 
 
 class ProfileTests(unittest.TestCase):
