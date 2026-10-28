@@ -1,6 +1,6 @@
 {
   "domain": "cecotec_conga",
-  "name": "Conga Map",
+  "name": "Cecotec Conga 8290",
   "codeowners": ["@hkfuertes"],
   "config_flow": true,
   "dependencies": ["persistent_notification"],
