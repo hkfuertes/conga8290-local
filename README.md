@@ -2,21 +2,21 @@ Local control and live maps for the **Cecotec Conga 8290 Immortal Ultra** (Tuya-
 
 Two deliverables:
 
-1. **`conga_map`** — a HACS custom integration (pure Python): Cecotec cloud login inside the config flow, live map camera, clickable room cleaning. See [custom_components/conga_map](custom_components/conga_map).
-2. **Tuya Local profile** — `cecotec_conga8290_vacuum.yaml` for day-to-day control (fan speed, modes, battery, dock, …) via the LAN, protocol 3.3. `conga_map` reinstalls it with one click whenever tuya_local updates wipe its `devices/` directory.
+1. **`cecotec_conga`** — a HACS custom integration (pure Python): Cecotec cloud login inside the config flow, live map camera, clickable room cleaning. See [custom_components/cecotec_conga](custom_components/cecotec_conga).
+2. **Tuya Local profile** — `cecotec_conga8290_vacuum.yaml` for day-to-day control (fan speed, modes, battery, dock, …) via the LAN, protocol 3.3. The integration reinstalls it with one click whenever tuya_local updates wipe its `devices/` directory.
 
 ## How it works
 
 - **Control** goes through tuya_local over the LAN (TCP 6668, protocol 3.3).
-- **Maps never travel over the LAN** (verified — see [MAPS.md](MAPS.md)): the robot uploads map files to Tuya's S3 when asked via DP16 `get_both`. `conga_map` triggers that request on the LAN, then downloads the newest map file from S3 with temporary credentials obtained from the Cecotec cloud session, decodes it (LZO1X + v2 header) and renders the PNG.
-- **Room cleaning** is sent by `conga_map` itself as raw robot-protocol frames (0x14) over DP15 — short-lived LAN connections only, because the robot's WiFi module hangs with multiple long-lived clients.
+- **Maps never travel over the LAN** (verified — see [MAPS.md](MAPS.md)): the robot uploads map files to Tuya's S3 when asked via DP16 `get_both`. The integration triggers that request on the LAN, then downloads the newest map file from S3 with temporary credentials obtained from the Cecotec cloud session, decodes it (LZO1X + v2 header) and renders the PNG.
+- **Room cleaning** is sent by the integration itself as raw robot-protocol frames (0x14) over DP15 — short-lived LAN connections only, because the robot's WiFi module hangs with multiple long-lived clients.
 - The **local_key** is recovered automatically: the config flow logs into the Cecotec cloud (OEM gateway, ET3 signing with static per-app-version material — reverse-engineered, no emulation needed) and reads it from the device list. A persistent notification shows the key for tuya_local.
 
 ## Installation
 
 1. HACS → *Custom repositories* → add this repository, type **Integration**.
-2. Install **Conga Map**, restart Home Assistant.
-3. Settings → Devices → Add Integration → **Conga Map**: enter your Cecotec email/password/country code and the robot's IP.
+2. Install **Cecotec Conga 8290**, restart Home Assistant.
+3. Settings → Devices → Add Integration → **Cecotec Conga 8290**: enter your Cecotec email/password/country code and the robot's IP.
 4. A `camera.conga_map` entity appears with `calibration_points` and `rooms` attributes.
 
 ### Dashboard (lovelace-xiaomi-vacuum-map-card)
@@ -36,7 +36,7 @@ map_modes:
     icon: mdi:home-map-marker
     selection_type: ROOM
     service_call_schema:
-      service: conga_map.roomclean
+      service: cecotec_conga.roomclean
       service_data:
         rooms: '[[selection]]'    # [{room: N}, ...] — accepted as-is
         passes: '[[repeats]]'
@@ -53,7 +53,7 @@ map_modes:
           text: Room6
 ```
 
-You don't write `predefined_selections` by hand: open the card editor once and press **Generate rooms config** — the card builds them from the camera's `rooms` attribute (pixel bounding boxes; the values above are real ones from a decoded map). If the floor plan changes later: call `conga_map.refresh_map`, then press Generate again. Calibration follows every new image automatically.
+You don't write `predefined_selections` by hand: open the card editor once and press **Generate rooms config** — the card builds them from the camera's `rooms` attribute (pixel bounding boxes; the values above are real ones from a decoded map). If the floor plan changes later: call `cecotec_conga.refresh_map`, then press Generate again. Calibration follows every new image automatically.
 
 Notes:
 
