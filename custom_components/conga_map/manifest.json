@@ -4,9 +4,9 @@
   "codeowners": ["@hkfuertes"],
   "config_flow": true,
   "dependencies": ["persistent_notification"],
-  "documentation": "https://github.com/hkfuertes/conga8290-tuya-local",
+  "documentation": "https://github.com/hkfuertes/conga8290-local",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/hkfuertes/conga8290-tuya-local/issues",
+  "issue_tracker": "https://github.com/hkfuertes/conga8290-local/issues",
   "requirements": ["Pillow>=10.1.0", "cryptography>=42.0.0"],
   "version": "0.2.0"
 }
