@@ -46,7 +46,9 @@ class CongaMapConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         errors = {}
         if user_input is not None:
-            host = user_input.get(CONF_HOST) or _scan_tuyalocal_host()
+            host = user_input.get(CONF_HOST) or await self.hass.async_add_executor_job(
+                _scan_tuyalocal_host
+            )
             if not host:
                 errors[CONF_HOST] = "host_required"
             if not errors:
@@ -60,11 +62,14 @@ class CongaMapConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     )
                 errors[err[0]] = err[1]
         defaults = user_input or {}
+        scanned = defaults.get(CONF_HOST) or await self.hass.async_add_executor_job(
+            _scan_tuyalocal_host
+        )
         schema = vol.Schema({
             vol.Required(CONF_EMAIL, default=defaults.get(CONF_EMAIL, "")): str,
             vol.Required("password", default=defaults.get("password", "")): str,
             vol.Required(CONF_COUNTRY, default=defaults.get(CONF_COUNTRY, "34")): str,
-            vol.Required(CONF_HOST, default=defaults.get(CONF_HOST) or _scan_tuyalocal_host()): str,
+            vol.Required(CONF_HOST, default=scanned): str,
             vol.Optional(CONF_WAIT, default=defaults.get(CONF_WAIT, DEFAULT_WAIT)): int,
         })
         return self.async_show_form(step_id="user", data_schema=schema, errors=errors)

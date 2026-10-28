@@ -59,8 +59,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 def _notify(hass: HomeAssistant, title: str, message: str) -> None:
-    hass.components.persistent_notification.async_create(
-        title=title, message=message, notification_id=f"{DOMAIN}_setup"
+    from homeassistant.components import persistent_notification
+
+    persistent_notification.async_create(
+        hass, title=title, message=message, notification_id=f"{DOMAIN}_setup"
     )
 
 

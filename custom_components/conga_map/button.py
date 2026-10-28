@@ -54,10 +54,13 @@ class ReinstallTemplateButton(ButtonEntity):
         self._attr_unique_id = f"{DOMAIN}_reinstall_template"
 
     async def async_press(self) -> None:
+        from homeassistant.components import persistent_notification
+
         dst = await self._coord.hass.async_add_executor_job(
             self._coord.install_tuya_local_profile
         )
-        self._coord.hass.components.persistent_notification.async_create(
+        persistent_notification.async_create(
+            self._coord.hass,
             title="tuya_local template reinstalled",
             message=dst,
             notification_id=f"{DOMAIN}_template",

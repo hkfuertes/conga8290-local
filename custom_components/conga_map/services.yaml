@@ -10,7 +10,7 @@ roomclean:
   fields:
     rooms:
       name: Rooms
-      description: Room IDs (see Room* switches) or card format [{room: N}]
+      description: 'Room IDs (see Room* switches) or card format [{room: N}]'
       required: true
       example: [3, 5]
       selector:
