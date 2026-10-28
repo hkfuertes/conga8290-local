@@ -1,5 +1,5 @@
-"""Domain + config keys for the conga_map integration."""
-DOMAIN = "conga_map"
+"""Domain + config keys for the cecotec_conga integration (icon: brands.home-assistant.io/cecotec_conga)."""
+DOMAIN = "cecotec_conga"
 
 # config flow / entry data
 CONF_EMAIL = "email"

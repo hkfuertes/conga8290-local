@@ -1,5 +1,5 @@
 {
-  "domain": "conga_map",
+  "domain": "cecotec_conga",
   "name": "Conga Map",
   "codeowners": ["@hkfuertes"],
   "config_flow": true,
