@@ -53,11 +53,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def _roomclean(coord: CongaMapCoordinator, call: ServiceCall) -> None:
-    rooms = call.data.get("rooms") or []
+    # acepta [3,5] o [{room:3},{room:5}] (formato [[variables]] de la card)
+    ids = [int(r["room"] if isinstance(r, dict) else r) for r in (call.data.get("rooms") or [])]
     passes = int(call.data.get("passes", 1))
-    if not rooms:
+    if not ids:
         return
-    args = ["roomclean"] + [str(r) for r in rooms] + ["-passes", str(passes)]
+    args = ["roomclean"] + [str(i) for i in ids] + ["-passes", str(passes)]
     await coord.hass.async_add_executor_job(coord.run, args)
 
 

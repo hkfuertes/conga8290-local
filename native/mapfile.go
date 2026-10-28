@@ -323,16 +323,45 @@ func mapJSON(md *mapData, binPath, pngPath string) string {
 		ID, Order, Suction, Cistern, SweepTimes, MopTimes, FloorMaterial, Pixels int
 		Name                                                                       string
 		AreaM2                                                                     float64
+		Zone                                                                      [4]int // [x, y, w, h] vacuum cm — bounding box para la card
 	}
+	// bbox por habitación en píxeles de grid
+	bbox := map[int][4]int{} // id -> minx, miny, maxx, maxy
+	for y := 0; y < hd.Height; y++ {
+		for x := 0; x < hd.Width; x++ {
+			b := int(md.Grid[y*hd.Width+x])
+			t, rid := b&7, (b>>3)&31
+			if (t == 2 || t == 7) && rid >= 1 && rid <= 27 {
+				bb, ok := bbox[rid]
+				if !ok {
+					bb = [4]int{x, y, x, y}
+				}
+				if x < bb[0] { bb[0] = x }
+				if y < bb[1] { bb[1] = y }
+				if x > bb[2] { bb[2] = x }
+				if y > bb[3] { bb[3] = y }
+				bbox[rid] = bb
+			}
+		}
+	}
+	w2cx := func(px int) float64 { return (float64(hd.OriginX) - float64(hd.Width-1-px)) * hd.Resolution * 100 }
+	w2cy := func(py int) float64 { return (float64(hd.OriginY) - float64(hd.Height-1-py)) * hd.Resolution * 100 }
 	rooms := make([]roomOut, 0, len(md.Rooms))
 	for _, r := range md.Rooms {
 		name := r.Name
 		if name == "" {
 			name = fmt.Sprintf("Room%d", r.RoomID)
 		}
+		var zone [4]int
+		if bb, ok := bbox[r.RoomID]; ok {
+			zone = [4]int{
+				int(w2cx(bb[2])), int(w2cy(bb[3])),
+				int(w2cx(bb[0]) - w2cx(bb[2])), int(w2cy(bb[1]) - w2cy(bb[3])),
+			}
+		}
 		rooms = append(rooms, roomOut{r.RoomID, r.Order, r.Suction, r.Cistern, r.SweepTimes,
 			r.MopTimes, r.FloorMaterial, md.RoomPix[r.RoomID], name,
-			float64(md.RoomPix[r.RoomID]) * hd.Resolution * hd.Resolution})
+			float64(md.RoomPix[r.RoomID]) * hd.Resolution * hd.Resolution, zone})
 	}
 	out := map[string]any{
 		"version": hd.Version, "map_id": hd.ID, "stable": hd.MapStable,
