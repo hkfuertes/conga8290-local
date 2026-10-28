@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"image"
 	"image/color"
@@ -304,8 +305,63 @@ func summarize(md *mapData) string {
 	return b.String()
 }
 
+// mapJSON: machine-readable summary for Home Assistant (conga decode/getmap --json).
+// Calibration maps pixel coordinates to vacuum world coordinates in CENTIMETRES
+// (xiaomi-vacuum-map-card format): world = (origin - coord) * res * 100,
+// x mirrored, y flipped because PNG row 0 is the top.
+func mapJSON(md *mapData, binPath, pngPath string) string {
+	hd := md.Header
+	type pt struct{ X, Y float64 }
+	// three calibration points: pixel (0,0), (w,0), (0,h) -> world cm
+	w2c := func(px, py int) pt {
+		return pt{
+			X: (float64(hd.OriginX) - float64(hd.Width-1-px)) * hd.Resolution * 100,
+			Y: (float64(hd.OriginY) - float64(hd.Height-1-py)) * hd.Resolution * 100,
+		}
+	}
+	type roomOut struct {
+		ID, Order, Suction, Cistern, SweepTimes, MopTimes, FloorMaterial, Pixels int
+		Name                                                                       string
+		AreaM2                                                                     float64
+	}
+	rooms := make([]roomOut, 0, len(md.Rooms))
+	for _, r := range md.Rooms {
+		name := r.Name
+		if name == "" {
+			name = fmt.Sprintf("Room%d", r.RoomID)
+		}
+		rooms = append(rooms, roomOut{r.RoomID, r.Order, r.Suction, r.Cistern, r.SweepTimes,
+			r.MopTimes, r.FloorMaterial, md.RoomPix[r.RoomID], name,
+			float64(md.RoomPix[r.RoomID]) * hd.Resolution * hd.Resolution})
+	}
+	out := map[string]any{
+		"version": hd.Version, "map_id": hd.ID, "stable": hd.MapStable,
+		"width": hd.Width, "height": hd.Height, "resolution_m": hd.Resolution,
+		"origin_x": hd.OriginX, "origin_y": hd.OriginY,
+		"dock": map[string]float64{"x": hd.ChargeX, "y": hd.ChargeY},
+		"rooms": rooms,
+		"calibration": []map[string]pt{
+			{"vacuum": w2c(0, 0), "map": {0, 0}},
+			{"vacuum": w2c(hd.Width-1, 0), "map": {float64(hd.Width - 1), 0}},
+			{"vacuum": w2c(0, hd.Height-1), "map": {0, float64(hd.Height - 1)}},
+		},
+	}
+	if binPath != "" {
+		out["map_file"] = binPath
+	}
+	if pngPath != "" {
+		out["png_file"] = pngPath
+	}
+	b, _ := json.MarshalIndent(out, "", " ")
+	return string(b)
+}
+
 // decodeFile: full offline pipeline for one .bin.
 func decodeFile(path string) (string, error) {
+	return decodeFileMode(path, false)
+}
+
+func decodeFileMode(path string, asJSON bool) (string, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
@@ -314,14 +370,22 @@ func decodeFile(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := renderPNG(md, strings.TrimSuffix(path, ".bin")+".png"); err != nil {
+	pngPath := strings.TrimSuffix(path, ".bin") + ".png"
+	if err := renderPNG(md, pngPath); err != nil {
 		return "", err
+	}
+	if asJSON {
+		return mapJSON(md, path, pngPath), nil
 	}
 	return summarize(md), nil
 }
 
 // getMap: LAN get_both -> wait for upload -> list -> download -> decode -> PNG.
 func getMap(cfg *Config, waitSeconds int, outdir string) (string, string, error) {
+	return getMapMode(cfg, waitSeconds, outdir, false)
+}
+
+func getMapMode(cfg *Config, waitSeconds int, outdir string, asJSON bool) (string, string, error) {
 	if _, err := lanControl(cfg, map[string]any{"16": "get_both"}, 4); err != nil {
 		return "", "", fmt.Errorf("LAN get_both: %w", err)
 	}
@@ -357,8 +421,12 @@ func getMap(cfg *Config, waitSeconds int, outdir string) (string, string, error)
 	if err != nil {
 		return path, "", fmt.Errorf("downloaded ok but decode failed: %w", err)
 	}
-	if err := renderPNG(md, strings.TrimSuffix(path, ".bin")+".png"); err != nil {
+	pngPath := strings.TrimSuffix(path, ".bin") + ".png"
+	if err := renderPNG(md, pngPath); err != nil {
 		return path, "", err
+	}
+	if asJSON {
+		return path, mapJSON(md, path, pngPath), nil
 	}
 	when := time.Unix(newest.Time, 0).Format("2006-01-02 15:04")
 	return path, "cloud entry: " + when + "\n" + summarize(md), nil

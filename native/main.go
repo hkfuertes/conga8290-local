@@ -186,19 +186,29 @@ func main() {
 		fs := flag.NewFlagSet("getmap", flag.ExitOnError)
 		wait := fs.Int("wait", 60, "seconds to wait for the robot to upload")
 		outdir := fs.String("out", "maps", "output directory")
+		asJSON := fs.Bool("json", false, "machine-readable output (rooms + calibration)")
 		fs.Parse(args)
 		cfg := loadConfig()
-		path, sum, err := getMap(cfg, *wait, *outdir)
+		path, sum, err := getMapMode(cfg, *wait, *outdir, *asJSON)
 		fatalIf(err, "getmap")
 		fmt.Printf("map saved: %s\n%s\n", path, sum)
 
 	case "decode":
-		if len(args) < 1 {
-			fmt.Println("usage: conga decode maps/foo.bin")
+		asJSON := false
+		var files []string
+		for _, a := range args {
+			if a == "--json" || a == "-json" {
+				asJSON = true
+				continue
+			}
+			files = append(files, a)
+		}
+		if len(files) == 0 {
+			fmt.Println("usage: conga decode [--json] maps/foo.bin")
 			os.Exit(2)
 		}
-		for _, f := range args {
-			sum, err := decodeFile(f)
+		for _, f := range files {
+			sum, err := decodeFileMode(f, asJSON)
 			fatalIf(err, f)
 			fmt.Printf("%s\n%s\n", f, sum)
 		}

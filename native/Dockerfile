@@ -1,11 +1,15 @@
-# Cross-compiles for ARG TARGETARCH (amd64/arm64, set automatically by buildx):
+# Cross-compiles for ARG TARGETARCH (amd64/arm64, set automatically by buildx).
+# The build container ALWAYS runs on the build host's platform (BUILDPLATFORM)
+# and lets Go cross-compile — no QEMU slowdown.
 #   docker buildx build --platform linux/arm64 --target artifacts -o . .
-FROM golang:1.27-alpine AS build
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS build
 ARG TARGETARCH
+ARG BUILDPLATFORM
+ENV GOARCH=$TARGETARCH
 WORKDIR /src
 COPY go.mod ./
 COPY *.go ./
-RUN CGO_ENABLED=0 go build -ldflags='-s -w' -o /out/conga-linux-${TARGETARCH} .
+RUN CGO_ENABLED=0 GOARCH=${TARGETARCH} go build -ldflags='-s -w' -o /out/conga-linux-${TARGETARCH} .
 
 # Artifacts-only stage: what --target artifacts -o exports (just the binary).
 FROM scratch AS artifacts

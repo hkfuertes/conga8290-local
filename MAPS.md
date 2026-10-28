@@ -3,6 +3,29 @@
 The existing Tuya Local vacuum/profile stays unchanged. **The read-only historical
 map camera is installed and verified on HA 2026.10.1.**
 
+## Native binary `conga` (2026-10-28, feat/native-binary)
+
+Single static Go binary (docker-only builds, amd64+arm64) replacing the whole
+Python toolchain for daily use:
+
+- `extract <apk|xapk>` — derives material/ch_key/app credentials **pure-Go**:
+  BuildConfig dex statics + APK signing-cert SHA-256 + the `t_s.bmp` carrier
+  v1 parser (RE'd from `libthing_security_algorithm.so`: Java-hash offset
+  walk, hex segment pairs, exact-rational Vandermonde solve — imath `mp_rat`
+  → `math/big.Rat`). Byte-identical to the Unicorn-derived values (oracle test
+  in commit 50a1cb1). The Unicorn fixtures stay as the re-derivation reference.
+- `login` — OEM username-token + RSA-PKCS1v15(MD5) password login → session,
+  and recovers the robot `local_key` (device list).
+- `initlan -from-tuyalocal <yaml>` — LAN credentials from tuya_local's config.
+- `getmap` — full pipeline LAN `get_both` → cloud upload → `thing.m.dev.storage
+  .config.get` → `file.list(pic)` → SigV4 presign → S3 → decode → rooms+PNG.
+  `--json` exports rooms + camera calibration points (xiaomi-vacuum-map-card).
+- `roomclean <ids>` — 0x14 frame via DP15 (tuya_local owns the rest of control).
+
+HA integration skeleton: `hass/custom_components/conga_map` + design at
+`hass/HACS-DESIGN.md` (cornguo-style room switches + Xiaomi map card for
+room-click cleaning; untested — no HA on the dev machine).
+
 ## Current target: phone-free map retrieval
 
 **There is no working independent current-map downloader yet.** Phone-cache reads
