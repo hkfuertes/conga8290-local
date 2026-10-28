@@ -29,7 +29,16 @@ class CongaMapCamera(Camera):
 
     @property
     def extra_state_attributes(self):
-        return self._coord.latest or {}
+        attrs = dict(self._coord.latest or {})
+        # lovelace-xiaomi-vacuum-map-card lee este atributo de la cámara
+        # (calibration_source: camera: true) → cero copy-paste de puntos
+        if "calibration" in attrs:
+            attrs["calibration_points"] = [
+                {"vacuum": {"x": p["vacuum"]["X"], "y": p["vacuum"]["Y"]},
+                 "map": {"x": int(p["map"]["X"]), "y": int(p["map"]["Y"])}}
+                for p in attrs["calibration"]
+            ]
+        return attrs
 
     async def async_camera_image(self, width=None, height=None) -> bytes | None:
         path = self._coord.png_path()
