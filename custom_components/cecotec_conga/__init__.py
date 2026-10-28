@@ -34,6 +34,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def roomclean(call: ServiceCall) -> None:
         # accept [3,5] or [{room:3},{room:5}] (xiaomi-card [[variables]] form)
         raw = call.data.get(ATTR_ROOMS) or []
+        if isinstance(raw, (str, int)):
+            raw = [raw]  # single id without list
         ids = [int(r["room"] if isinstance(r, dict) else r) for r in raw]
         passes = int(call.data.get(ATTR_PASSES, 1))
         if ids:
