@@ -6,7 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN
+from .const import DOMAIN, device_info
 from .coordinator import CongaMapCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ class CleanRoomsButton(ButtonEntity):
         self._hass = hass
         self._coord = coord
         self._attr_unique_id = f"{DOMAIN}_clean_rooms"
+        self._attr_device_info = device_info(coord.dev_id)
 
     async def async_press(self) -> None:
         ids = []
@@ -52,6 +53,7 @@ class ReinstallTemplateButton(ButtonEntity):
     def __init__(self, coord) -> None:
         self._coord = coord
         self._attr_unique_id = f"{DOMAIN}_reinstall_template"
+        self._attr_device_info = device_info(coord.dev_id)
 
     async def async_press(self) -> None:
         from homeassistant.components import persistent_notification

@@ -6,7 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN
+from .const import DOMAIN, device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ class CongaMapCamera(Camera):
         super().__init__()
         self._coord = coord
         self._attr_unique_id = f"{DOMAIN}_map"
+        self._attr_device_info = device_info(coord.dev_id)
 
     @property
     def extra_state_attributes(self):

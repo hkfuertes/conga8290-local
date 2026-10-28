@@ -22,3 +22,15 @@ ATTR_PASSES = "passes"
 PRODUCT_ID = "kofl9ubyyyfznpxw"   # Conga 8290 Immortal Ultra Power
 TUYA_LOCAL_DEVICES = "custom_components/tuya_local/devices"
 PROFILE_FILE = "tuya_local_profile.yaml"
+
+from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntryType
+
+
+def device_info(dev_id: str) -> DeviceInfo:
+    """One device for every entity of this integration."""
+    return DeviceInfo(
+        identifiers={(DOMAIN, dev_id)},
+        name="Conga 8290",
+        manufacturer="Cecotec",
+        model="Conga 8290 Immortal Ultra",
+    )

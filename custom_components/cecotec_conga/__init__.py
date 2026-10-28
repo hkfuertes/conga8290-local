@@ -16,7 +16,7 @@ from .coordinator import CongaMapCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["camera", "switch", "button"]
+PLATFORMS = ["camera", "switch", "button", "sensor"]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
