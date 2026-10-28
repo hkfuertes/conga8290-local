@@ -16,17 +16,17 @@ class ProfileTests(unittest.TestCase):
         profile = self.profile
         self.assertEqual(profile['products'][0]['id'], CONGA_PRODUCT)
         self.assertEqual(profile['products'][0]['manufacturer'], 'Cecotec')
-        self.assertEqual([item['entity'] for item in profile['entities'][:6]],
-                          ['vacuum', 'button', 'sensor', 'sensor', 'sensor', 'select'])
+        self.assertEqual([item['entity'] for item in profile['entities'][:5]],
+                          ['vacuum', 'sensor', 'sensor', 'sensor', 'select'])
 
     def test_extension_primary_dp_names_match_entity_platforms(self):
         names = {'select': 'option', 'switch': 'switch', 'number': 'value',
                  'sensor': 'sensor', 'button': 'button'}
-        for entity in self.profile['entities'][6:]:
+        for entity in self.profile['entities'][5:]:
             self.assertEqual(entity['dps'][0]['name'], names[entity['entity']])
 
     def test_extensions_are_optional_and_never_force_queries(self):
-        for entity in self.profile['entities'][6:]:
+        for entity in self.profile['entities'][5:]:
             for dp in entity['dps']:
                 self.assertIs(dp.get('optional'), True)
                 self.assertFalse(dp.get('force', False))
