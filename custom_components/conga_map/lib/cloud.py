@@ -1,7 +1,6 @@
-"""Cecotec OEM cloud client (a1.tuyaeu.com /api.json) — compact port of
-conga8290/{cloud_protocol,oem_auth_request,oem_candidate_request,
-oem_readonly_api,oem_login_payload,oem_rootless_client}.py + native/{cloud,login}.go
-(cloud_probe.py flow), live-verified with the Cecotec app's own credentials.
+"""Cecotec OEM cloud client (a1.tuyaeu.com /api.json) — ported from
+removed research prototypes (conga8290/ package + Go native/),
+live-verified with the Cecotec app's own credentials.
 
 Request shape (ET3): form-encoded POST; postData = base64(12B nonce +
 AES-GCM seal of the compact JSON payload); sign = HMAC-SHA256(material,
@@ -33,8 +32,8 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 API_HOST = "a1.tuyaeu.com"  # only OEM gateway verified for this account/app
 CONGA_PRODUCT = "kofl9ubyyyfznpxw"
 
-# Static app identity from the pinned Cecotec 1.2.9 APK (native/extract.go,
-# conga8290/oem_bootstrap_fixture.py). MATERIAL decodes to
+# Static app identity from the pinned Cecotec 1.2.9 APK (derivation fully
+# reverse-engineered — see MAPS.md). MATERIAL decodes to
 #   package _ SHA256(signing-cert) fingerprint (uppercase hex, ':' pairs)
 #   _ carrier key (assets/t_s.bmp) _ appSecret (BuildConfig dex statics)
 MATERIAL_HEX = (

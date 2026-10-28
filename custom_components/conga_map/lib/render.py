@@ -1,4 +1,4 @@
-"""PNG renderer — port of renderPNG in native/mapfile.go. Pillow only."""
+"""PNG renderer — obstacles, room palette, dock marker. Pillow only."""
 from __future__ import annotations
 
 from PIL import Image

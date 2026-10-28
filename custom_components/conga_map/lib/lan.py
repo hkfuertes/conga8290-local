@@ -1,4 +1,4 @@
-"""Conga 8290 LAN via Tuya 3.3 — compact port of conga_lan.py + native/tuya.go.
+"""Conga 8290 LAN via Tuya 3.3 (tinytuya-compatible wire format; port of a removed prototype).
 
 Short-lived connections only: one connect per request, never persistent.
 Framing (tinytuya 3.3 and the Go port cross-checked, live-verified on the 8290):

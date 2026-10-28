@@ -1,4 +1,5 @@
-"""Conga 8290 map storage on Tuya S3 — port of cloud_probe.py + native/s3.go.
+"""Conga 8290 map storage on Tuya S3 (storage config, file list,
+query-style SigV4 presign, download). Live-verified.
 
 Pipeline (live-verified against ty-eu-storage-permanent.tuyaeu.com):
   storage_config(): thing.m.dev.storage.config.get v1.0 -> temporary AK/SK/token

@@ -83,7 +83,7 @@ Generate again.
   explicit protocol 3.3. Don't keep the Cecotec app open at the same time.
 - `roomclean` only sends when explicitly requested (service, button or card);
   no automatic cleaning anywhere in the integration.
-- Map files are cached in `/config/conga_map/` (`map.png` + timestamped).
+- Map files are cached in `/config/conga_maps/` (`map.png` + timestamped).
 
 ## Research notes
 

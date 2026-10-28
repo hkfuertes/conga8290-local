@@ -1,4 +1,5 @@
-"""Conga 8290 map decoder — port of native/mapfile.go (decodeMap/mapJSON).
+"""Conga 8290 map decoder (LZO1X + v2 header). Verified byte-identical
+to the robot-protocol JS reference on captured maps.
 
 decode_file(path) / decode_bytes(data) return the same JSON shape as the Go
 binary's `conga decode --json` output. Python 3.11+, stdlib only.
