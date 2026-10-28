@@ -52,7 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             f"local_key: {entry.data[CONF_LOCAL_KEY]}\n"
             "Paste it into tuya_local if it is not configured yet.")
 
-    await hass.config_entries.async_forward_platforms_setups(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     # first map in background: HA startup must not block ~60 s
     hass.async_create_task(coord.async_refresh_map())
     return True
