@@ -1,0 +1,808 @@
+# EXPERIMENTAL: SDK schema + verified LAN status on protocol 3.3.
+# Expanded profile loaded in HA; enabled entities have validated read states.
+# Physical writes remain untested. No credentials here.
+# Optional extensions do not require absent DPs or force additional queries.
+# Hidden entities are disabled by default, NOT blocked from writes if enabled.
+# Raw map/room/timer/voice payloads need codecs and are deliberately not exposed.
+name: Robot vacuum
+products:
+  - id: kofl9ubyyyfznpxw
+    manufacturer: Cecotec
+    model: Conga 8290 Immortal Ultra Power
+entities:
+  - entity: vacuum
+    dps:
+      - id: 1
+        type: boolean
+        name: command
+        mapping:
+          - dps_val: true
+            value: start
+          - dps_val: false
+            value: stop
+      # Expected pause semantics (true = paused) still need a physical test.
+      - id: 2
+        type: boolean
+        name: activate
+        mapping:
+          - dps_val: true
+            value: false
+          - dps_val: false
+            value: true
+      - id: 5
+        type: string
+        name: status
+        mapping:
+          - dps_val: standby
+            value: standby
+          - dps_val: smart
+            value: cleaning
+          - dps_val: zone_clean
+            value: zone cleaning
+          - dps_val: paused
+            value: paused
+          - dps_val: goto_pos
+            value: going to location
+          - dps_val: pos_arrived
+            value: standby
+          - dps_val: pos_unarrive
+            value: standby
+          - dps_val: goto_charge
+            value: returning
+          - dps_val: charging
+            value: charging
+          - dps_val: charge_done
+            value: docked
+          - dps_val: sleep
+            value: sleep
+          - dps_val: select_room
+            value: room cleaning
+          - dps_val: part_clean
+            value: partial cleaning
+          - dps_val: game
+            value: game
+          - dps_val: mapping
+            value: mapping
+          - dps_val: collecting_dust
+            value: emptying
+          - dps_val: manual
+            value: manual control
+      - id: 9
+        type: string
+        name: fan_speed
+        mapping:
+          - dps_val: close
+            value: "off"
+          - dps_val: gentle
+            value: low
+          - dps_val: normal
+            value: medium
+          - dps_val: strong
+            value: high
+          - dps_val: max
+            value: maximum
+      - id: 11
+        type: boolean
+        optional: true
+        name: locate
+      - id: 28
+        type: bitfield
+        optional: true
+        name: error
+        mapping:
+          - dps_val: 0
+            value: false
+          - value: true
+  # vacuum.return_to_base is NOT provided: DP3 is an independent button.
+  - entity: button
+    name: Return to base
+    icon: "mdi:home-import-outline"
+    dps:
+      - id: 3
+        type: boolean
+        name: button
+  - entity: sensor
+    class: battery
+    dps:
+      - id: 8
+        type: integer
+        name: sensor
+        unit: "%"
+        class: measurement
+  - entity: sensor
+    name: Cleaning time
+    class: duration
+    dps:
+      - id: 6
+        type: integer
+        name: sensor
+        unit: min
+        class: measurement
+  - entity: sensor
+    name: Cleaned area
+    class: area
+    dps:
+      - id: 7
+        type: integer
+        name: sensor
+        unit: m2
+        class: measurement
+  - entity: select
+    translation_key: mopping
+    dps:
+      - id: 10
+        type: string
+        name: option
+        mapping:
+          - dps_val: close
+            value: "off"
+          - dps_val: low
+            value: low
+          - dps_val: middle
+            value: medium
+          - dps_val: high
+            value: high
+
+  # Cleaning settings: separate work mode, pattern, water flow and intensity.
+  - entity: select
+    name: Work mode
+    dps:
+      - id: 41
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: both_work
+            value: Vacuum and mop
+          - dps_val: only_sweep
+            value: Vacuum only
+          - dps_val: only_mop
+            value: Mop only
+  - entity: select
+    name: Cleaning pattern
+    dps:
+      - id: 105
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: auto
+            value: Automatic
+          - dps_val: clean_thoroughly
+            value: Thorough
+          # Preserve the misspellings in the product's wire protocol.
+          - dps_val: acrubbing
+            value: Scrubbing
+          - dps_val: border
+            value: Edges
+          - dps_val: espiral
+            value: Spiral
+          - dps_val: espiral_cuadrada
+            value: Square spiral
+  - entity: select
+    name: Mopping intensity
+    dps:
+      - id: 53
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: slow
+            value: Slow
+          - dps_val: normal
+            value: Normal
+          - dps_val: fast
+            value: Fast
+  - entity: switch
+    name: Y-pattern mopping
+    dps:
+      - id: 104
+        type: boolean
+        optional: true
+        name: switch
+  - entity: select
+    name: Carpet preference
+    category: config
+    dps:
+      - id: 44
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: adaptive
+            value: Adaptive
+          - dps_val: evade
+            value: Avoid
+          - dps_val: ignore
+            value: Ignore
+  - entity: switch
+    name: Carpet suction boost
+    category: config
+    dps:
+      - id: 45
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Resume interrupted cleaning
+    category: config
+    dps:
+      - id: 27
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Do not disturb
+    category: config
+    dps:
+      - id: 25
+        type: boolean
+        optional: true
+        name: switch
+  - entity: number
+    name: Volume
+    category: config
+    dps:
+      - id: 26
+        type: integer
+        optional: true
+        name: value
+        unit: "%"
+        range:
+          min: 0
+          max: 100
+        mapping:
+          - step: 1
+  - entity: switch
+    name: Sound
+    category: config
+    dps:
+      - id: 108
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Child lock
+    category: config
+    hidden: true
+    dps:
+      - id: 47
+        type: boolean
+        optional: true
+        name: switch
+
+  # Read telemetry, including counters marked writable by the SDK schema.
+  - entity: sensor
+    name: Mop installation
+    class: enum
+    category: diagnostic
+    dps:
+      - id: 40
+        type: string
+        optional: true
+        name: sensor
+        mapping:
+          - dps_val: none
+            value: Not installed
+          - dps_val: installed
+            value: Installed
+  - entity: sensor
+    name: Side brush remaining life
+    class: duration
+    category: diagnostic
+    dps:
+      - id: 17
+        type: integer
+        optional: true
+        readonly: true
+        name: sensor
+        unit: min
+        class: measurement
+  - entity: sensor
+    name: Main brush remaining life
+    class: duration
+    category: diagnostic
+    dps:
+      - id: 19
+        type: integer
+        optional: true
+        readonly: true
+        name: sensor
+        unit: min
+        class: measurement
+  - entity: sensor
+    name: Filter remaining life
+    class: duration
+    category: diagnostic
+    dps:
+      - id: 21
+        type: integer
+        optional: true
+        name: sensor
+        unit: min
+        class: measurement
+  - entity: sensor
+    name: Mop remaining life
+    class: duration
+    category: diagnostic
+    dps:
+      - id: 23
+        type: integer
+        optional: true
+        name: sensor
+        unit: min
+        class: measurement
+  - entity: sensor
+    name: Lifetime cleaned area
+    class: area
+    category: diagnostic
+    dps:
+      - id: 29
+        type: integer
+        optional: true
+        name: sensor
+        unit: m2
+        class: total_increasing
+  - entity: sensor
+    name: Lifetime cleaning count
+    category: diagnostic
+    dps:
+      - id: 30
+        type: integer
+        optional: true
+        name: sensor
+        class: total_increasing
+  - entity: sensor
+    name: Lifetime cleaning time
+    class: duration
+    category: diagnostic
+    dps:
+      - id: 31
+        type: integer
+        optional: true
+        name: sensor
+        unit: min
+        class: total_increasing
+  # Preserve the entire bitmap, including simultaneous faults; no guessed codes.
+  - entity: sensor
+    name: Fault bitmap
+    category: diagnostic
+    dps:
+      - id: 28
+        type: bitfield
+        optional: true
+        readonly: true
+        name: sensor
+  - entity: sensor
+    name: Message report code
+    category: diagnostic
+    hidden: true
+    dps:
+      - id: 128
+        type: string
+        optional: true
+        readonly: true
+        name: sensor
+  - entity: sensor
+    name: Game availability
+    class: enum
+    category: diagnostic
+    hidden: true
+    dps:
+      - id: 120
+        type: string
+        optional: true
+        name: sensor
+        mapping:
+          - dps_val: map_unstable
+            value: Map unstable
+          - dps_val: twice_cleaning_unfinished
+            value: Second cleaning unfinished
+          - dps_val: allow_play
+            value: Available
+
+  # Advanced/schema-only controls: disabled until their app binding is validated.
+  # Selecting a navigation mode does NOT supply room IDs, zones or coordinates.
+  - entity: select
+    name: Operational mode
+    hidden: true
+    dps:
+      - id: 4
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: smart
+            value: Automatic
+          - dps_val: zone
+            value: Zone
+          - dps_val: pose
+            value: Go to position
+          - dps_val: select_room
+            value: Selected rooms
+          - dps_val: game
+            value: Game
+          - dps_val: manual
+            value: Manual
+  # Direction selection sends a movement command; it is not passive telemetry.
+  - entity: select
+    name: Manual direction
+    hidden: true
+    dps:
+      - id: 12
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: forward
+            value: Forward
+          - dps_val: backward
+            value: Backward
+          - dps_val: turn_left
+            value: Turn left
+          - dps_val: turn_right
+            value: Turn right
+          - dps_val: stop
+            value: Stop
+          - dps_val: exit
+            value: Exit manual mode
+          - dps_val: right_forward
+            value: Forward right
+          - dps_val: left_forward
+            value: Forward left
+  - entity: select
+    name: Map data request
+    hidden: true
+    dps:
+      - id: 16
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: get_map
+            value: Map
+          - dps_val: get_path
+            value: Path
+          - dps_val: get_both
+            value: Map and path
+  - entity: switch
+    name: Quick mapping
+    hidden: true
+    dps:
+      - id: 109
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Customized mode
+    category: config
+    hidden: true
+    dps:
+      - id: 39
+        type: boolean
+        optional: true
+        name: switch
+  # The display name suggests a second pass, despite the misleading wire code.
+  - entity: switch
+    name: Second cleaning pass candidate
+    category: config
+    hidden: true
+    dps:
+      - id: 101
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Cruise
+    hidden: true
+    dps:
+      - id: 46
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Fan during return candidate
+    category: config
+    hidden: true
+    dps:
+      - id: 146
+        type: boolean
+        optional: true
+        name: switch
+  - entity: select
+    name: Voice language
+    category: config
+    hidden: true
+    dps:
+      - id: 36
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: chinese_simplified
+            value: Simplified Chinese
+          - dps_val: chinese_traditional
+            value: Traditional Chinese
+          - dps_val: english
+            value: English
+          - dps_val: german
+            value: German
+          - dps_val: french
+            value: French
+          - dps_val: russian
+            value: Russian
+          - dps_val: spanish
+            value: Spanish
+          - dps_val: korean
+            value: Korean
+          - dps_val: latin
+            value: Latin
+          - dps_val: portuguese
+            value: Portuguese
+          - dps_val: japanese
+            value: Japanese
+          - dps_val: italian
+            value: Italian
+  - entity: select
+    name: Area units
+    category: config
+    hidden: true
+    dps:
+      - id: 42
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: square_meter
+            value: Square meters
+          - dps_val: square_foot
+            value: Square feet
+  - entity: sensor
+    name: Estimated area
+    class: area
+    category: diagnostic
+    hidden: true
+    dps:
+      - id: 43
+        type: integer
+        optional: true
+        name: sensor
+        unit: m2
+        class: measurement
+
+  # Dust/dock semantics and hardware support are not established for this unit.
+  - entity: number
+    name: Dust collection frequency code
+    category: config
+    hidden: true
+    dps:
+      - id: 37
+        type: integer
+        optional: true
+        name: value
+        range:
+          min: 0
+          max: 4
+        mapping:
+          - step: 1
+  # Whether DP38 enables collection or triggers it is unresolved.
+  - entity: switch
+    name: Dust collection candidate
+    hidden: true
+    dps:
+      - id: 38
+        type: boolean
+        optional: true
+        name: switch
+  - entity: select
+    name: Charging dock type
+    category: config
+    hidden: true
+    dps:
+      - id: 103
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: seat
+            value: Charging dock
+          - dps_val: station
+            value: Station
+  - entity: switch
+    name: Mop self-cleaning candidate
+    hidden: true
+    dps:
+      - id: 49
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Mop drying candidate
+    hidden: true
+    dps:
+      - id: 50
+        type: boolean
+        optional: true
+        name: switch
+  - entity: number
+    name: Mop self-cleaning area interval
+    category: config
+    hidden: true
+    dps:
+      - id: 51
+        type: integer
+        optional: true
+        name: value
+        unit: m2
+        range:
+          min: 1
+          max: 10
+        mapping:
+          - step: 1
+  - entity: select
+    name: Mop self-cleaning strength
+    category: config
+    hidden: true
+    dps:
+      - id: 52
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: fast
+            value: Fast
+          - dps_val: daily
+            value: Daily
+          - dps_val: depth
+            value: Deep
+
+  # These overlap DP105. Precedence and trigger-versus-setting behavior unknown.
+  - entity: switch
+    name: Deep cleaning candidate
+    hidden: true
+    dps:
+      - id: 142
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Edge cleaning candidate
+    hidden: true
+    dps:
+      - id: 143
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Spiral cleaning candidate
+    hidden: true
+    dps:
+      - id: 144
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Square spiral cleaning candidate
+    hidden: true
+    dps:
+      - id: 145
+        type: boolean
+        optional: true
+        name: switch
+  - entity: select
+    name: Game icon code
+    hidden: true
+    dps:
+      - id: 106
+        type: string
+        optional: true
+        name: option
+        mapping:
+          - dps_val: icon1
+            value: icon1
+          - dps_val: icon2
+            value: icon2
+          - dps_val: icon3
+            value: icon3
+          - dps_val: icon4
+            value: icon4
+          - dps_val: icon5
+            value: icon5
+          - dps_val: icon6
+            value: icon6
+          - dps_val: icon7
+            value: icon7
+          - dps_val: icon8
+            value: icon8
+          - dps_val: icon9
+            value: icon9
+          - dps_val: icon10
+            value: icon10
+          - dps_val: icon11
+            value: icon11
+          - dps_val: icon12
+            value: icon12
+          - dps_val: icon13
+            value: icon13
+          - dps_val: icon14
+            value: icon14
+          - dps_val: icon15
+            value: icon15
+          - dps_val: icon16
+            value: icon16
+          - dps_val: icon17
+            value: icon17
+          - dps_val: icon18
+            value: icon18
+          - dps_val: icon19
+            value: icon19
+          - dps_val: icon20
+            value: icon20
+          - dps_val: icon21
+            value: icon21
+          - dps_val: icon22
+            value: icon22
+          - dps_val: icon23
+            value: icon23
+          - dps_val: icon24
+            value: icon24
+          - dps_val: icon25
+            value: icon25
+          - dps_val: icon26
+            value: icon26
+          - dps_val: icon27
+            value: icon27
+          - dps_val: icon28
+            value: icon28
+          - dps_val: icon29
+            value: icon29
+          - dps_val: icon30
+            value: icon30
+
+  # Destructive/reset operations: disabled by default. Never test casually.
+  - entity: button
+    name: Reset map
+    category: config
+    hidden: true
+    icon: "mdi:map-remove"
+    dps:
+      - id: 13
+        type: boolean
+        optional: true
+        name: button
+  - entity: button
+    name: Reset side brush life
+    category: config
+    hidden: true
+    dps:
+      - id: 18
+        type: boolean
+        optional: true
+        name: button
+  - entity: button
+    name: Reset main brush life
+    category: config
+    hidden: true
+    dps:
+      - id: 20
+        type: boolean
+        optional: true
+        name: button
+  - entity: button
+    name: Reset filter life
+    category: config
+    hidden: true
+    dps:
+      - id: 22
+        type: boolean
+        optional: true
+        name: button
+  - entity: button
+    name: Reset mop life
+    category: config
+    hidden: true
+    dps:
+      - id: 24
+        type: boolean
+        optional: true
+        name: button

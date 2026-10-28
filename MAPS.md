@@ -1,9 +1,61 @@
 # Conga 8290 maps: verified milestones
 
-The existing Tuya Local vacuum/profile stays unchanged. **The read-only historical
-map camera is installed and verified on HA 2026.10.1.**
+## Current status (2026-10-28)
+
+**A phone-free current-map pipeline works end-to-end** and ships as the
+`conga_map` integration (`custom_components/conga_map`, pure Python):
+
+1. LAN `get_both` (DP16) over Tuya 3.3 — short-lived TCP 6668 connection.
+2. The robot uploads fresh map/path files to Tuya S3 (verified live).
+3. `conga_map` presigns (SigV4) and downloads the newest history file,
+   decodes it (LZO1X + v2 header) and renders the PNG + room/calibration
+   attributes for lovelace-xiaomi-vacuum-map-card.
+
+Room cleaning is verified at protocol level (0x14 frames over DP15 move the
+mode to `select_room`); a live multi-room cleaning test with user consent is
+still pending. The map cadence is ~1 minute per refresh (S3 history), not
+realtime; live robot pose (DP15 cmd 0x39) and card goto/zone backends
+(0x28/0x3a frames) remain future work. The P2P/UDP LAN route below stayed
+unproven and is **not needed** for the S3 pipeline.
+
+Everything below this section is the chronological research log. Tools it
+mentions (`conga_lan.py`, `cloud_probe.py`, `inspect_map.py`, the Go `conga`
+CLI, `experimental/`, `hass/` skeletons) were **removed from the repo** after
+their logic was ported into `conga_map/lib/`; their findings remain valid.
+
+## Native binary `conga` (historical, removed)
+
+> Historical: the Go CLI was removed after its logic was fully ported to the
+> pure-Python `conga_map` integration (`lib/`); this section keeps the findings.
+
+Single static Go binary (docker-only builds, amd64+arm64) replacing the whole
+Python toolchain for daily use:
+
+- `extract <apk|xapk>` — derives material/ch_key/app credentials **pure-Go**:
+  BuildConfig dex statics + APK signing-cert SHA-256 + the `t_s.bmp` carrier
+  v1 parser (RE'd from `libthing_security_algorithm.so`: Java-hash offset
+  walk, hex segment pairs, exact-rational Vandermonde solve — imath `mp_rat`
+  → `math/big.Rat`). Byte-identical to the Unicorn-derived values (oracle test
+  in commit 50a1cb1). The Unicorn fixtures stay as the re-derivation reference.
+- `login` — OEM username-token + RSA-PKCS1v15(MD5) password login → session,
+  and recovers the robot `local_key` (device list).
+- `initlan -from-tuyalocal <yaml>` — LAN credentials from tuya_local's config.
+- `getmap` — full pipeline LAN `get_both` → cloud upload → `thing.m.dev.storage
+  .config.get` → `file.list(pic)` → SigV4 presign → S3 → decode → rooms+PNG.
+  `--json` exports rooms + camera calibration points (xiaomi-vacuum-map-card).
+- `roomclean <ids>` — 0x14 frame via DP15 (tuya_local owns the rest of control).
+
+All of the above now lives in `custom_components/conga_map/lib/` (pure Python,
+verified byte-identical). The original HA skeleton `hass/custom_components/
+conga_map` and `hass/HACS-DESIGN.md` were superseded by the shipped
+integration.
 
 ## Current target: phone-free map retrieval
+
+> **Superseded (2026-10-28):** the S3 history pipeline described in the status
+> section IS a phone-free current-map downloader and is live-verified. What
+> follows is the historical P2P/LAN assessment, which remains true: local-key
+> P2P is unproven and unnecessary for the working pipeline.
 
 **There is no working independent current-map downloader yet.** Phone-cache reads
 and offline file inspection do not meet the requested phone-free retrieval goal.
@@ -38,7 +90,7 @@ read-only download route, **not live map freshness or automatic refresh**.
 
 ## First camera milestone
 
-[Experimental source](experimental/README.md) reuses cornguo's camera and Tuya Local
+[The experimental cornguo fork](#) (removed from the repo) reused cornguo's camera and Tuya Local
 device association, with a bounded v2 renderer and imported historical snapshot.
 Only the camera platform remains. There are no account credentials, cloud clients,
 room commands, map-upload requests, polling or capability/parser patches.
@@ -62,9 +114,9 @@ This remains experimental and is not a HACS release. No actual floor plan
 or map file is shipped. Do not install the unmodified fork for this model: its map
 parser and room commands are incompatible or unvalidated, and it requests uploads.
 
-## Python room inspection
+## Python room inspection (tool removed; decoder lives in `conga_map/lib/mapfile.py`)
 
-`inspect_map.py` now decodes an existing private v2 layout entirely offline:
+`inspect_map.py` (removed) decoded an existing private v2 layout entirely offline:
 
 ```sh
 python3 inspect_map.py --input /private/path/map.bin.stream \

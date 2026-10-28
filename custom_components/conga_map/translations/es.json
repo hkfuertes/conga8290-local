@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conga 8290 (login Cecotec)",
+        "description": "El login recupera la local_key automáticamente. tuya_local sigue encargándose del control.",
+        "data": {
+          "email": "Email de la cuenta Cecotec",
+          "password": "Contraseña",
+          "country_code": "Prefijo de país (ej. 34)",
+          "host": "IP del robot",
+          "upload_wait": "Segundos de espera de subida a la nube (45 por defecto)"
+        }
+      }
+    },
+    "error": {
+      "login_failed": "Login fallido: revisa email/contraseña/país",
+      "no_home": "No se encontró hogar en la cuenta",
+      "no_robot": "No hay Conga 8290 en esta cuenta",
+      "host_required": "IP del robot obligatoria (o crea tuya_local.yaml)"
+    }
+  }
+}
