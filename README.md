@@ -1,5 +1,3 @@
-## Conga 8290 → Home Assistant
-
 Local control and live maps for the **Cecotec Conga 8290 Immortal Ultra** (Tuya-based, product `kofl9ubyyyfznpxw`) without the Cecotec app, without a Tuya IoT project, and without Android/Frida.
 
 Two deliverables:
