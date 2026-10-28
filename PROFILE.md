@@ -1,17 +1,8 @@
 # Experimental extended Tuya Local profile
 
-The profile defines **56 entities**: 25 enabled by default and 31 disabled by
-default. It covers all **60 scalar datapoints** in the cached product schema;
-the nine raw fields are deliberately excluded because their encodings are unknown.
-This is not evidence that the robot implements every feature.
+The profile defines **56 entities**: 25 enabled by default and 31 disabled by default. It covers all **60 scalar datapoints** in the cached product schema; the nine raw fields are deliberately excluded because their encodings are unknown. This is not evidence that the robot implements every feature.
 
-The original six entities retain their mappings and identifiers. They loaded in
-HA and returned status, but **physical control writes remain untested**. The
-expanded profile has passed offline tests and was loaded on the test HA instance:
-56 registry entities, 25 enabled with valid read states and 31 disabled by the
-integration. **No physical writes were performed during deployment.**
-Replacing the YAML alone may require an HA restart/reload to discover entities.
-Existing entity-registry preferences can override the defaults described here.
+The original six entities retain their mappings and identifiers. They loaded in HA and returned status, but **physical control writes remain untested**. The expanded profile has passed offline tests and was loaded on the test HA instance: 56 registry entities, 25 enabled with valid read states and 31 disabled by the integration. **No physical writes were performed during deployment.** Replacing the YAML alone may require an HA restart/reload to discover entities. Existing entity-registry preferences can override the defaults described here.
 
 ## Default additions
 
@@ -30,13 +21,11 @@ Existing entity-registry preferences can override the defaults described here.
 | Lifetime cleaning area / count / time | 29 / 30 / 31 | Totals, not per-run history |
 | Fault bitmap | 28 | Full integer; preserves simultaneous faults, no guessed fault strings |
 
-Water flow (DP10), work mode, pattern, intensity and Y-mopping are separate
-controls. Protocol spelling errors such as `acrubbing` are preserved on the wire.
+Water flow (DP10), work mode, pattern, intensity and Y-mopping are separate controls. Protocol spelling errors such as `acrubbing` are preserved on the wire.
 
 ## Disabled-by-default additions
 
-These entities exist in the YAML but must be explicitly enabled in HA before use.
-`hidden: true` is an entity-registry default, **not a permissions barrier**.
+These entities exist in the YAML but must be explicitly enabled in HA before use. `hidden: true` is an entity-registry default, **not a permissions barrier**.
 
 | Entity | DP | Reason for caution |
 | --- | --- | --- |
@@ -59,50 +48,26 @@ These entities exist in the YAML but must be explicitly enabled in HA before use
 | Reset side brush / main brush / filter / mop life | 18 / 20 / 22 / 24 | Clears maintenance counters |
 | Estimated area / game availability / message code | 43 / 120 / 128 | Diagnostic sensors; not control writes |
 
-All extension DPs are optional. None uses `force: true`, polling commands,
-automatic resets or write side effects. Absent DPs may yield unknown state;
-enabling an entity is not proof that the robot supports it. Maintenance life,
-faults and message reports are exposed only as telemetry even where the cached
-schema labels them writable.
+All extension DPs are optional. None uses `force: true`, polling commands, automatic resets or write side effects. Absent DPs may yield unknown state; enabling an entity is not proof that the robot supports it. Maintenance life, faults and message reports are exposed only as telemetry even where the cached schema labels them writable.
 
 ## Still not implemented
 
-- Raw fields DP14/15/32/33/34/35/107/110/147: map/path data, command transport,
-  native schedules, DND time window, information, voice, icons and scores.
+- Raw fields DP14/15/32/33/34/35/107/110/147: map/path data, command transport, native schedules, DND time window, information, voice, icons and scores.
 - Map image generation, room/zone coordinates, exclusion editing and room commands.
 - History download, native timer encoding and sustained offline-operation testing.
 
-Do not write arbitrary base64/hex strings to raw fields. A selector for an
-operational mode does not implement the corresponding navigation command.
+Do not write arbitrary base64/hex strings to raw fields. A selector for an operational mode does not implement the corresponding navigation command.
 
 ## Maps: reuse candidate and current research
 
-The preferred reuse candidate is the
-[`cornguo/tuya-vacuum-maps`](https://github.com/cornguo/tuya-vacuum-maps) fork.
-It reuses Tuya Local's device/cache/connection for status and commands, but its
-**map downloader still uses Tuya OpenAPI**. Selecting Tuya Local does not supply
-OpenAPI authentication or a working map. Its pinned dependency `tuya-vacuum==0.1.8`:
+The preferred reuse candidate is the [`cornguo/tuya-vacuum-maps`](https://github.com/cornguo/tuya-vacuum-maps) fork. It reuses Tuya Local's device/cache/connection for status and commands, but its **map downloader still uses Tuya OpenAPI**. Selecting Tuya Local does not supply OpenAPI authentication or a working map. Its pinned dependency `tuya-vacuum==0.1.8`:
 
-- Downloads maps through Tuya **OpenAPI**, requiring a Tuya IoT client ID/secret
-  and device access. These are not the LAN `local_key` or Cecotec login credentials.
-- Provides a separate `VacuumMap(layout_hex, path_hex).to_image()` renderer, which
-  could be reused with files obtained through the Cecotec OEM session route.
-- Supports some compressed map versions 0/1; version 2 and uncompressed layouts
-  explicitly raise `NotImplementedError`. Conga 8290 is not on the tested list.
+- Downloads maps through Tuya **OpenAPI**, requiring a Tuya IoT client ID/secret and device access. These are not the LAN `local_key` or Cecotec login credentials.
+- Provides a separate `VacuumMap(layout_hex, path_hex).to_image()` renderer, which could be reused with files obtained through the Cecotec OEM session route.
+- Supports some compressed map versions 0/1; version 2 and uncompressed layouts explicitly raise `NotImplementedError`. Conga 8290 is not on the tested list.
 
-Separate local research decoded a real v2 phone-cache layout with seven rooms and
-tested an isolated adapter for the fork's existing camera payload. A historical
-cleaning map was then downloaded through the Cecotec OEM route without a Tuya IoT
-project. Live objects are absent; the historical camera is verified on HA 2026.10.1,
-but live refresh remains unvalidated.
-See [MAPS.md](MAPS.md) and the source-only camera experiment. The OEM account probes
-are not part of this recovery distribution.
+Separate local research decoded a real v2 phone-cache layout with seven rooms and tested an isolated adapter for the fork's existing camera payload. A historical cleaning map was then downloaded through the Cecotec OEM route without a Tuya IoT project. Live objects are absent; the historical camera is verified on HA 2026.10.1, but live refresh remains unvalidated. See [MAPS.md](MAPS.md) and the source-only camera experiment. The OEM account probes are not part of this recovery distribution.
 
-Do not install the unmodified fork expecting plug-and-play 8290 support: it can
-automatically request a new map upload, and its room-command format is not validated
-for this model. The intended first adaptation is read-only, with uploads, room
-commands, cloud-write fallback and capability monkey patches disabled.
+Do not install the unmodified fork expecting plug-and-play 8290 support: it can automatically request a new map upload, and its room-command format is not validated for this model. The intended first adaptation is read-only, with uploads, room commands, cloud-write fallback and capability monkey patches disabled.
 
-Floor plans, signed URLs and storage credentials must never be committed or included
-in shared logs. Map polling needs a separately agreed credential lifecycle and would
-be a separate component, not an extension of the one-off key-recovery script.
+Floor plans, signed URLs and storage credentials must never be committed or included in shared logs. Map polling needs a separately agreed credential lifecycle and would be a separate component, not an extension of the one-off key-recovery script.
